@@ -1,4 +1,4 @@
-import Account from "../models/accounts";
+import Account from "../models/accounts.js";
 
 async function createAccount(req, res) {
     const { name, email, balance } = req.body;
