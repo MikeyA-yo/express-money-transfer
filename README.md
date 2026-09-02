@@ -82,3 +82,9 @@ Base path: `/api/v1/transfers`
 - **Express.js**: Web framework for Node.js
 - **Mongoose**: Elegant MongoDB object modeling for Node.js
 - **dotenv**: Module to load environment variables from a `.env` file
+
+## Improvements
+- add end to end unit testing and separate the app from the entry point (index.js)
+- add config for environment variables set ups and connections to app services
+- add loggers, helmet, input sanitisation
+- use a base schema, and let other schema extend base schema, base schema can contain timestamps and stuff

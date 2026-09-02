@@ -16,6 +16,7 @@ async function createAccount(req, res) {
 
         return res.status(201).json(savedAccount);
     } catch (error) {
+        console.error("CREATE ACCOUNT ERROR:", error);
         return res.status(500).json({ error: error.message });
     }
 }
