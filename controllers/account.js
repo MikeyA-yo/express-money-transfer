@@ -1,4 +1,5 @@
 import Account from "../models/accounts.js";
+import logger from "../config/logger.js";
 
 async function createAccount(req, res) {
     const { name, email, balance } = req.body;
@@ -13,10 +14,11 @@ async function createAccount(req, res) {
 
         const newAccount = new Account({ id, name, email, balance });
         const savedAccount = await newAccount.save();
+        logger.info("Account created", { accountId: savedAccount.id });
 
         return res.status(201).json(savedAccount);
     } catch (error) {
-        console.error("CREATE ACCOUNT ERROR:", error);
+        logger.error("CREATE ACCOUNT ERROR:", error);
         return res.status(500).json({ error: error.message });
     }
 }

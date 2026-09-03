@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 import Transfer from '../models/transfer.js';
 import Account from '../models/accounts.js';
+import logger from '../config/logger.js';
+import { transferDTO } from '../validators/transfer.validator.dto.js';
+
+// import transferSchema from '../validators/transfer.validator.dto.js';
 
 function toDecimal128(value) {
     return mongoose.Types.Decimal128.fromString(String(value));
@@ -46,10 +50,16 @@ async function createTransfer(req, res) {
             ...transfer.toObject(),
             status: "COMPLETED",
         }
-        res.status(201).json(output);
+        logger.info("Transfer completed", {
+            transferId: transfer.id,
+            fromAccountId,
+            toAccountId,
+            amount: transfer.amount.toString(),
+        });
+        res.status(201).json(transferDTO(output));
     } catch (error) {
         const statusCode = error.statusCode || 500;
-        console.error(error);
+        logger.error("CREATE TRANSFER ERROR:", error);
         res.status(statusCode).json({ fromAccountId, toAccountId, amount, status: "FAILED", error: error.message });
     } finally {
         await session.endSession();

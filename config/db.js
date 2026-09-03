@@ -1,8 +1,7 @@
 import mongoose from 'mongoose';
-import { MONGODB_URI } from './env.js';
 import logger from './logger.js';
 
-async function connectDB() {
+async function connectDB(MONGODB_URI) {
     try {
         if (!MONGODB_URI) {
             throw new Error('MONGODB_URI is not defined in the environment variables');

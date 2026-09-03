@@ -1,14 +1,20 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
-import basePlugin from './basePlugin.js';
+import baseSchema from './basePlugin.js';
 
-const accountSchema = new Schema({
-    name: { type: String, required: true },
+let accountSchema = new Schema({
+    name: { type: String, required: true, get: v => v.trim() },
     email: { type: String, required: true },
     balance: { type: Schema.Types.Decimal128, required: true, default: 10000.00 },
 });
 
-accountSchema.plugin(basePlugin);
+// accountSchema.plugin(basePlugin);
+
+accountSchema = baseSchema(accountSchema, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
 const Account = mongoose.model('Account', accountSchema);
 export default Account;

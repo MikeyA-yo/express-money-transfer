@@ -1,0 +1,36 @@
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T11:54:31.378Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T11:54:31.400Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 562 - 252.245 ms","timestamp":"2026-09-03T11:56:58.112Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 562 - 142.721 ms","timestamp":"2026-09-03T12:00:31.958Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 562 - 139.470 ms","timestamp":"2026-09-03T12:03:57.914Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788278253338fm7cj0 200 273 - 211.811 ms","timestamp":"2026-09-03T12:04:12.041Z"}
+{"level":"info","message":"GET /api/v1/accounts/9 404 29 - 167.591 ms","timestamp":"2026-09-03T12:04:35.524Z"}
+{"level":"info","message":"GET /api/v1/accounts/%7B%7D 404 29 - 197.563 ms","timestamp":"2026-09-03T12:04:44.730Z"}
+{"amount":"9000000","fromAccountId":"1788283318953mcbpw6","level":"info","message":"Transfer completed","timestamp":"2026-09-03T12:07:47.619Z","toAccountId":"1788278253338fm7cj0","transferId":"6a996312bf22afdb3d7fd490"}
+{"level":"info","message":"POST /api/v1/transfers/ 201 301 - 1522.263 ms","timestamp":"2026-09-03T12:07:47.624Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"Expected string, received number","path":["fromAccountId"],"received":"number"}],"level":"error","message":"Validation error:","timestamp":"2026-09-03T12:08:06.849Z"}
+{"level":"info","message":"POST /api/v1/transfers/ 400 145 - 4.123 ms","timestamp":"2026-09-03T12:08:06.851Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"Required","path":["fromAccountId"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-03T12:09:02.316Z"}
+{"level":"info","message":"POST /api/v1/transfers/ 400 124 - 2.265 ms","timestamp":"2026-09-03T12:09:02.318Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:15:04.015Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:15:04.031Z"}
+{"amount":"9000000","fromAccountId":"1788283318953mcbpw6","level":"info","message":"Transfer completed","timestamp":"2026-09-03T12:15:54.200Z","toAccountId":"1788278253338fm7cj0","transferId":"6a9964f9d2ca6907ebb3c11e"}
+{"errors":[{"code":"invalid_type","expected":"number","message":"Expected number, received object","path":["amount"],"received":"object"}],"level":"error","message":"Transfer DTO validation error:","timestamp":"2026-09-03T12:15:54.203Z"}
+{"level":"error","message":"CREATE TRANSFER ERROR: Invalid transfer data","stack":"Error: Invalid transfer data\n    at transferDTO (file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/validators/transfer.validator.dto.js:53:15)\n    at createTransfer (file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/controllers/transfer.js:59:30)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/routes/transfer.js:8:5","timestamp":"2026-09-03T12:15:54.205Z"}
+{"level":"info","message":"POST /api/v1/transfers/ 500 142 - 1036.697 ms","timestamp":"2026-09-03T12:15:54.215Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:17:37.181Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:17:37.202Z"}
+{"amount":"9000000","fromAccountId":"1788283318953mcbpw6","level":"info","message":"Transfer completed","timestamp":"2026-09-03T12:18:30.182Z","toAccountId":"1788278253338fm7cj0","transferId":"6a9965959ceb9a1564f6852f"}
+{"level":"info","message":"POST /api/v1/transfers/ 201 95 - 1522.783 ms","timestamp":"2026-09-03T12:18:30.193Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:22:58.317Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:22:58.356Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:24:19.861Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:24:19.880Z"}
+{"amount":"9000000","fromAccountId":"1788283318953mcbpw6","level":"info","message":"Transfer completed","timestamp":"2026-09-03T12:25:48.552Z","toAccountId":"1788278253338fm7cj0","transferId":"6a99674c8ccab4c33c05aec6"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"Expected string, received object","path":["amount"],"received":"object"}],"level":"error","message":"Transfer DTO validation error:","timestamp":"2026-09-03T12:25:48.559Z"}
+{"level":"error","message":"CREATE TRANSFER ERROR: Invalid transfer data","stack":"Error: Invalid transfer data\n    at transferDTO (file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/validators/transfer.validator.dto.js:59:15)\n    at createTransfer (file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/controllers/transfer.js:59:30)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/routes/transfer.js:8:5","timestamp":"2026-09-03T12:25:48.562Z"}
+{"level":"info","message":"POST /api/v1/transfers/ 500 142 - 1802.253 ms","timestamp":"2026-09-03T12:25:48.589Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:27:37.246Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:27:37.259Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:27:48.428Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:27:48.448Z"}
