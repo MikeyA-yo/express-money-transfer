@@ -34,3 +34,78 @@
 {"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:27:37.259Z"}
 {"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:27:48.428Z"}
 {"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:27:48.448Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:27:54.221Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:27:54.257Z"}
+{"amount":"9000000","fromAccountId":"1788283318953mcbpw6","level":"info","message":"Transfer completed","timestamp":"2026-09-03T12:28:10.393Z","toAccountId":"1788278253338fm7cj0","transferId":"6a9967dacd0de5a4d35f6b9c"}
+{"level":"info","message":"POST /api/v1/transfers/ 201 95 - 1061.364 ms","timestamp":"2026-09-03T12:28:10.407Z"}
+{"amount":"775880","fromAccountId":"1788283318953mcbpw6","level":"info","message":"Transfer completed","timestamp":"2026-09-03T12:28:47.342Z","toAccountId":"1788278253338fm7cj0","transferId":"6a9967fecd0de5a4d35f6b9e"}
+{"level":"info","message":"POST /api/v1/transfers/ 201 94 - 1296.886 ms","timestamp":"2026-09-03T12:28:47.346Z"}
+{"level":"info","message":"GET /api/v1/accounts/ 200 562 - 168.573 ms","timestamp":"2026-09-03T12:29:07.703Z"}
+{"level":"info","message":"GET /api/v1/accounts/ 200 562 - 128.445 ms","timestamp":"2026-09-03T12:29:26.240Z"}
+{"level":"info","message":"GET /api/v1/accounts/ 200 562 - 201.009 ms","timestamp":"2026-09-03T12:29:58.734Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:31:20.876Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:31:20.894Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T12:51:43.973Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T12:51:43.981Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T13:45:12.107Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T13:45:12.115Z"}
+{"level":"error","message":"Error connecting to MongoDB: querySrv ECONNREFUSED _mongodb._tcp.cluster0.lun9qde.mongodb.net","timestamp":"2026-09-03T15:26:40.199Z"}
+{"level":"error","message":"Error connecting to MongoDB: querySrv ECONNREFUSED _mongodb._tcp.cluster0.lun9qde.mongodb.net","timestamp":"2026-09-03T15:26:41.655Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-03T20:10:13.414Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-03T20:10:13.433Z"}
+{"level":"info","message":"POST /api/v1/accounts 400 327 - 13.367 ms","timestamp":"2026-09-06T21:12:23.263Z"}
+{"level":"info","message":"POST /api/v1/accounts 400 327 - 1.617 ms","timestamp":"2026-09-06T21:12:23.296Z"}
+{"level":"error","message":"CREATE TRANSFER ERROR: Account not found","stack":"Error: Account not found\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:24:37\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at ClientSession.withTransaction (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\mongodb\\src\\sessions.ts:826:20)\n    at createTransfer (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:19:9)\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\routes\\transfer.js:8:5","statusCode":404,"timestamp":"2026-09-06T21:12:23.293Z"}
+{"level":"info","message":"POST /api/v1/accounts 400 327 - 2.528 ms","timestamp":"2026-09-06T21:12:23.304Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 120 - 56.097 ms","timestamp":"2026-09-06T21:12:23.305Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 7.877 ms","timestamp":"2026-09-06T21:12:23.322Z"}
+{"level":"info","message":"POST /api/v1/accounts 400 327 - 5.563 ms","timestamp":"2026-09-06T21:12:23.330Z"}
+{"level":"info","message":"POST /api/v1/accounts 400 327 - 1.642 ms","timestamp":"2026-09-06T21:12:23.338Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"Required","path":["fromAccountId"],"received":"undefined"},{"code":"invalid_type","expected":"string","message":"Required","path":["toAccountId"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-06T21:12:23.344Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 235 - 3.958 ms","timestamp":"2026-09-06T21:12:23.346Z"}
+{"level":"info","message":"POST /api/v1/accounts 400 327 - 1.506 ms","timestamp":"2026-09-06T21:12:23.360Z"}
+{"level":"info","message":"POST /api/v1/accounts 400 327 - 1.271 ms","timestamp":"2026-09-06T21:12:23.366Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"Required","path":["fromAccountId"],"received":"undefined"},{"code":"invalid_type","expected":"string","message":"Required","path":["toAccountId"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-06T21:12:23.371Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 235 - 2.813 ms","timestamp":"2026-09-06T21:12:23.373Z"}
+{"level":"error","message":"CREATE TRANSFER ERROR: Account not found","stack":"Error: Account not found\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:24:37\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at ClientSession.withTransaction (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\mongodb\\src\\sessions.ts:826:20)\n    at createTransfer (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:19:9)\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\routes\\transfer.js:8:5","statusCode":404,"timestamp":"2026-09-06T21:14:52.104Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 120 - 30.502 ms","timestamp":"2026-09-06T21:14:52.113Z"}
+{"accountId":"17887292921297xmq9o","level":"info","message":"Account created","timestamp":"2026-09-06T21:14:53.693Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 260 - 1584.405 ms","timestamp":"2026-09-06T21:14:53.714Z"}
+{"accountId":"1788729292028nbuf0g","level":"info","message":"Account created","timestamp":"2026-09-06T21:14:53.701Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 262 - 1723.411 ms","timestamp":"2026-09-06T21:14:53.751Z"}
+{"accountId":"1788729293737vrhh32","level":"info","message":"Account created","timestamp":"2026-09-06T21:14:54.000Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 255 - 267.151 ms","timestamp":"2026-09-06T21:14:54.003Z"}
+{"accountId":"1788729294018rctdst","level":"info","message":"Account created","timestamp":"2026-09-06T21:14:54.030Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 267 - 14.841 ms","timestamp":"2026-09-06T21:14:54.032Z"}
+{"amount":"200","fromAccountId":"17887292921297xmq9o","level":"info","message":"Transfer completed","timestamp":"2026-09-06T21:14:54.183Z","toAccountId":"1788729293737vrhh32","transferId":"6a9dd7ce5ec3291f7bc02796"}
+{"level":"info","message":"POST /api/v1/transfers 201 91 - 173.524 ms","timestamp":"2026-09-06T21:14:54.186Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 49 - 4.161 ms","timestamp":"2026-09-06T21:14:54.185Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 3.808 ms","timestamp":"2026-09-06T21:14:54.266Z"}
+{"accountId":"17887292943334k1mdu","level":"info","message":"Account created","timestamp":"2026-09-06T21:14:54.404Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 259 - 71.944 ms","timestamp":"2026-09-06T21:14:54.405Z"}
+{"accountId":"17887292944099bd3ba","level":"info","message":"Account created","timestamp":"2026-09-06T21:14:54.475Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 255 - 66.783 ms","timestamp":"2026-09-06T21:14:54.476Z"}
+{"level":"error","message":"CREATE TRANSFER ERROR: Insufficient funds","stack":"Error: Insufficient funds\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:31:37\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at ClientSession.withTransaction (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\mongodb\\src\\sessions.ts:826:20)\n    at createTransfer (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:19:9)\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\routes\\transfer.js:8:5","statusCode":400,"timestamp":"2026-09-06T21:14:54.491Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 135 - 9.498 ms","timestamp":"2026-09-06T21:14:54.493Z"}
+{"level":"error","message":"CREATE TRANSFER ERROR: Account not found","stack":"Error: Account not found\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:24:37\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at ClientSession.withTransaction (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\mongodb\\src\\sessions.ts:826:20)\n    at createTransfer (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:19:9)\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\routes\\transfer.js:8:5","statusCode":404,"timestamp":"2026-09-06T21:15:20.539Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 120 - 207.953 ms","timestamp":"2026-09-06T21:15:20.602Z"}
+{"accountId":"17887293206867eagps","level":"info","message":"Account created","timestamp":"2026-09-06T21:15:20.754Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 260 - 87.308 ms","timestamp":"2026-09-06T21:15:20.772Z"}
+{"accountId":"1788729320782441838","level":"info","message":"Account created","timestamp":"2026-09-06T21:15:20.831Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 255 - 53.526 ms","timestamp":"2026-09-06T21:15:20.838Z"}
+{"accountId":"1788729320494gxyag2","level":"info","message":"Account created","timestamp":"2026-09-06T21:15:20.852Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 262 - 392.139 ms","timestamp":"2026-09-06T21:15:20.886Z"}
+{"amount":"200","fromAccountId":"17887293206867eagps","level":"info","message":"Transfer completed","timestamp":"2026-09-06T21:15:20.901Z","toAccountId":"1788729320782441838","transferId":"6a9dd7e8eba51bd87fafadf4"}
+{"level":"info","message":"POST /api/v1/transfers 201 162 - 39.943 ms","timestamp":"2026-09-06T21:15:20.904Z"}
+{"level":"info","message":"GET /api/v1/accounts/17887293206867eagps 200 259 - 2.874 ms","timestamp":"2026-09-06T21:15:20.913Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788729320782441838 200 255 - 2.916 ms","timestamp":"2026-09-06T21:15:20.922Z"}
+{"accountId":"1788729320908svskm7","level":"info","message":"Account created","timestamp":"2026-09-06T21:15:20.916Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 267 - 10.159 ms","timestamp":"2026-09-06T21:15:20.918Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 49 - 4.122 ms","timestamp":"2026-09-06T21:15:20.928Z"}
+{"accountId":"1788729320934u5gm1s","level":"info","message":"Account created","timestamp":"2026-09-06T21:15:20.942Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 259 - 9.032 ms","timestamp":"2026-09-06T21:15:20.943Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 2.714 ms","timestamp":"2026-09-06T21:15:20.943Z"}
+{"accountId":"1788729320948fih32e","level":"info","message":"Account created","timestamp":"2026-09-06T21:15:20.954Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 255 - 7.824 ms","timestamp":"2026-09-06T21:15:20.956Z"}
+{"level":"error","message":"CREATE TRANSFER ERROR: Insufficient funds","stack":"Error: Insufficient funds\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:31:37\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at ClientSession.withTransaction (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\mongodb\\src\\sessions.ts:826:20)\n    at createTransfer (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:19:9)\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\routes\\transfer.js:8:5","statusCode":400,"timestamp":"2026-09-06T21:15:20.965Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 135 - 5.138 ms","timestamp":"2026-09-06T21:15:20.966Z"}

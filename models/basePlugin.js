@@ -11,6 +11,7 @@ export default function baseSchema(schema, customOptions = {}) {
     let initSchema = new Schema({
         id: { type: String, required: true },
         deleted: { type: Boolean, default: false },
+        schemaVersion: { type: Number, default: 1 },
     }, {
         ...defaultOptions,
         ...customOptions

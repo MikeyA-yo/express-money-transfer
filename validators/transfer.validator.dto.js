@@ -54,12 +54,14 @@ export const transferDTO = (data) => {
    try {
     const parsed = transferDTOSchema.parse(data);
      return {
+        id: data.id,
+        status: data.status || "COMPLETED",
         amount: parsed.amount,
-        from: parsed.fromAccountId,
-        to: parsed.toAccountId
-     }
+        fromAccountId: parsed.fromAccountId,
+        toAccountId: parsed.toAccountId
+     };
    }catch (e){
         logger.error("Transfer DTO validation error:", { errors: e.errors });
         throw new Error("Invalid transfer data");
    }
-}
+};

@@ -35,8 +35,34 @@ A simple RESTful API for managing accounts and transferring money between them. 
 
 4. Start the server:
    ```bash
-   node index.js
+   node server.js
    ```
+
+## Database Migrations
+
+This project uses [`migrate-mongo`](https://github.com/seppevs/migrate-mongo) with native ES Modules for versioned, production-safe database migrations.
+
+### Available Migration Commands
+
+```bash
+# Check status of applied vs pending migrations
+npm run migrate:status
+
+# Apply all pending migrations (up)
+npm run migrate:up
+
+# Rollback the last applied migration (down)
+npm run migrate:down
+
+# Create a new migration file in migrations/
+npm run migrate:create <migration-name>
+```
+
+### Best Practices for MongoDB Migrations
+
+1. **Idempotency**: Always write migrations so they can run multiple times safely without producing duplicate updates or errors (e.g. query with `{ field: { $exists: false } }`).
+2. **Batch Processing with Cursors**: Avoid `find()` loading all documents into memory. Use `.cursor().batchSize(500)` and `collection.bulkWrite()` for memory-safe updates.
+3. **Schema Versioning**: Models inherit `schemaVersion` from `models/basePlugin.js`. Increment or check this field when migrating documents.
 
 ## API Endpoints
 
