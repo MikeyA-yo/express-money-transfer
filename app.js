@@ -35,8 +35,17 @@ app.use('/api/v1/accounts', accountRoutes);
 app.use('/api/v1/transfers', transferRoutes);
 
 app.use((err, req, res, next) => {
-    console.error("EXPRESS ERROR HANDLER:", err);
-    res.status(500).json({ error: err.message });
+    const statusCode = err.statusCode || 500;
+    if (statusCode >= 500) {
+        logger.error("EXPRESS ERROR HANDLER:", err);
+    } else {
+        logger.warn("DOMAIN EXCEPTION:", { message: err.message, statusCode, details: err.details });
+    }
+   
+    res.status(statusCode).json({
+        error: err.message,
+        ...(err.details ? { details: err.details } : {})
+    });
 });
 
 export default app;
