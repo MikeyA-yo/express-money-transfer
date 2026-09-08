@@ -1,30 +1,23 @@
 import express from "express";
-import { getAccounts, getAccount, createAccount, updateAccount, deleteAccount } from "../controllers/account.js";
 import baseValidatorSchema from "../validators/index.js";
-import { accountSchema, validateAccountParams, accountParams } from "../validators/account.validator.dto.js";
+// import { accountSchema, validateAccountParams, accountParams } from "../validators/account.validator.dto.js";
+import { createAccountHandler, getAccountHandler, getAccountsHandler, updateAccountHandler, deleteAccountHandler } from "../controllers/account.js";
+import {schemaMiddleware} from "../request-schemas/index.js";
+import { accountParams, getAccountSchema } from "../request-schemas/account.schema.js";
+
 
 const router = express.Router();
 
 // router.use(baseValidatorSchema(accountSchema));
 
-router.get("/", async (req, res) => {
-   await getAccounts(req, res);
-});
+router.get("/", getAccountsHandler());
 
-router.get("/:id", async (req, res) => {
-    await getAccount(req, res);
-});
+router.get("/:id", schemaMiddleware(accountParams, "params"), getAccountHandler());
 
-router.post("/", baseValidatorSchema(accountSchema), async (req, res) => {
-     await createAccount(req, res);
-});
+router.post("/", schemaMiddleware(getAccountSchema, "body"),  createAccountHandler());
 
-router.patch("/:id", validateAccountParams(accountParams), async (req, res) => {
-    await updateAccount(req, res);
-});
+router.patch("/:id", schemaMiddleware(accountParams, "params"), updateAccountHandler());
 
-router.delete("/:id",validateAccountParams(accountParams), async (req, res) => {
-    await deleteAccount(req, res);
-});
+router.delete("/:id",schemaMiddleware(accountParams, "params"), deleteAccountHandler());
 
 export default router;

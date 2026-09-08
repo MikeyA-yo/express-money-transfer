@@ -1,11 +1,12 @@
-import Account from "../models/accounts.js";
+import Account  from "../models/accounts.js";
 import {
   DuplicateAccountError,
   NotFoundError
 } from "../common/domain-exceptions/domain-exceptions.js";
+import { toAccountResponse, toAccountsResponse } from "../response-schema/account.res.js";
 
-export async function createAccount(name, email, balance, options = {}) {
-  const accountModel = options.Account || Account;
+export async function createAccount(name, email, balance, options = {}, { account = Account } = {}) {
+  const accountModel = options.Account || account;
     
   const id = Date.now().toString() + Math.random().toString(36).slice(2, 8);
   try {
@@ -15,54 +16,54 @@ export async function createAccount(name, email, balance, options = {}) {
       throw DuplicateAccountError("Account already exists for this email", {resource: "Account", email});
     }
 
-    return await accountModel.create({ id, name, email, balance });
+    return toAccountResponse(await accountModel.create({ id, name, email, balance }));
   }catch(error) {
     throw error;
   }
 }
 
-export async function fetchAccounts(page = 1, limit = 10) {
+export async function fetchAccounts(page = 1, limit = 10, { account = Account } = {}) {
   try {
-    const accounts = await Account.find()
+    const accounts = await account.find()
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
-    return accounts;
+    return toAccountsResponse(accounts);
   } catch (error) {
     throw error;
   }
 }
 
-export async function getAccountById(id) {
+export async function getAccountById(id, {account = Account} = {}) {
     try {
-        const account = await Account.findOne({ id });
+        const account = await account.findOne({ id });
         if (!account) {
             throw NotFoundError("Account not found", { resource: "Account", id });
         }
-        return account;
+        return toAccountResponse(account);
     }catch (error) {
         throw error;
     }
 }
 
-export async function editAccount(id, name, email, balance) {
+export async function editAccount(id, name, email, balance, {account = Account} = {}) {
     try {
-        const account = await Account.findOneAndUpdate({ id }, { name, email, balance }, { new: true });
+        const account = await account.findOneAndUpdate({ id }, { name, email, balance }, { new: true });
         if (!account) {
             throw NotFoundError("Account not found", { resource: "Account", id });
         }
-        return account;
+        return toAccountResponse(account);
     } catch (error) {
         throw error;
-    }
+    }a
 }
 
-export async function removeAccount(id) {
+export async function removeAccount(id, {account = Account} = {}) {
     try {
-        const account = await Account.findOneAndDelete({ id });
+        const account = await account.findOneAndDelete({ id });
         if (!account) {
             throw NotFoundError("Account not found", { resource: "Account", id });
         }
-        return account;
+        return toAccountResponse(account);
     } catch (error) {
         throw error;
     }

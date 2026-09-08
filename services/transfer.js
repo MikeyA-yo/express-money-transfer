@@ -1,17 +1,23 @@
 import mongoose from 'mongoose';
 import Transfer from '../models/transfer.js';
 import Account from '../models/accounts.js';
-import { transferDTO } from '../validators/transfer.validator.dto.js';
+// import { transferDTO } from '../validators/transfer.validator.dto.js';
 import {
     NotFoundError,
     InsufficientFundsError
 } from '../common/domain-exceptions/domain-exceptions.js';
+import { toTransferResponse, toTransfersResponse } from '../response-schema/transfer.res.js';
 
 function toDecimal128(value) {
     return mongoose.Types.Decimal128.fromString(String(value));
 }
 
-export async function newTransfer(fromAccountId, toAccountId, amount) {
+const models = {
+    Transfer,
+    Account
+};
+
+export async function newTransfer(fromAccountId, toAccountId, amount, { Transfer = models.Transfer, Account = models.Account } = {}) {
     const session = await mongoose.startSession();
     let transfer;
     try {
@@ -52,7 +58,7 @@ export async function newTransfer(fromAccountId, toAccountId, amount) {
             ...transfer.toObject(),
             status: "COMPLETED",
         };
-        return transferDTO(output);
+        return toTransferResponse(output);
     } catch (error) {
         throw error;
     } finally {
@@ -60,24 +66,24 @@ export async function newTransfer(fromAccountId, toAccountId, amount) {
     }
 }
 
-export async function listTransfers(page = 1, limit = 10) {
+export async function listTransfers(page = 1, limit = 10, { Transfer = models.Transfer } = {}) {
     try {
         const transfers = await Transfer.find()
                     .skip((page - 1) * limit)
                     .limit(parseInt(limit));
-        return transfers;
+        return toTransfersResponse(transfers);
     } catch (error) {
         throw error;
     }
 }
 
-export async function getTransferById(id) {
+export async function getTransferById(id, { Transfer = models.Transfer } = {}) {
     try {
         const transfer = await Transfer.findOne({ id });
         if (!transfer) {
             throw NotFoundError('Transfer not found', { resource: 'Transfer', id });
         }
-        return transfer;
+        return toTransferResponse(transfer);
     } catch (error) {
         throw error;
     }

@@ -109,3 +109,90 @@
 {"level":"info","message":"POST /api/v1/accounts 201 255 - 7.824 ms","timestamp":"2026-09-06T21:15:20.956Z"}
 {"level":"error","message":"CREATE TRANSFER ERROR: Insufficient funds","stack":"Error: Insufficient funds\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:31:37\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at ClientSession.withTransaction (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\mongodb\\src\\sessions.ts:826:20)\n    at createTransfer (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\controllers\\transfer.js:19:9)\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\routes\\transfer.js:8:5","statusCode":400,"timestamp":"2026-09-06T21:15:20.965Z"}
 {"level":"info","message":"POST /api/v1/transfers 400 135 - 5.138 ms","timestamp":"2026-09-06T21:15:20.966Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T08:46:50.624Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T08:46:50.632Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T10:46:51.928Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T10:46:51.945Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T10:49:07.164Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T10:49:07.183Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T10:50:03.264Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T10:50:03.287Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T10:50:45.186Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T10:50:45.205Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T10:55:38.046Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T10:55:38.061Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T10:55:50.369Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T10:55:50.386Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T10:56:01.087Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T10:56:01.115Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:06:34.772Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:06:34.790Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:09:57.489Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:09:57.510Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:10:12.360Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:10:12.383Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:10:55.714Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:10:55.727Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:11:29.663Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:11:29.679Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:12:26.435Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:12:26.456Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:14:01.444Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:14:01.464Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:14:07.403Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:14:07.423Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:14:47.072Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:14:47.086Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:15:07.459Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:15:07.480Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:15:55.930Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:15:55.971Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:16:53.168Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:16:53.183Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:17:36.786Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:17:36.805Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:17:48.203Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:17:48.222Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:19:04.889Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:19:04.904Z"}
+{"level":"error","message":"EXPRESS ERROR HANDLER: Cannot access 'Account' before initialization","stack":"ReferenceError: Cannot access 'Account' before initialization\n    at createAccount (file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/services/account.js:7:85)\n    at file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/controllers/account.js:14:30\n    at Layer.handleRequest (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/validators/index.js:14:13\n    at Layer.handleRequest (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\layer.js:152:17)","timestamp":"2026-09-08T11:21:57.253Z"}
+{"level":"info","message":"POST /api/v1/accounts 500 57 - 3.856 ms","timestamp":"2026-09-08T11:21:57.256Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:22:00.199Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:22:00.206Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:24:57.559Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:24:57.572Z"}
+{"accountId":"1788866707858oi1xwq","level":"info","message":"Account created","timestamp":"2026-09-08T11:25:08.189Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 280 - 334.977 ms","timestamp":"2026-09-08T11:25:08.194Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 1190 - 156.643 ms","timestamp":"2026-09-08T11:25:51.005Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:26:58.681Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:26:58.688Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:28:13.960Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:28:13.968Z"}
+{"level":"error","message":"EXPRESS ERROR HANDLER: newTransfer is not a function","stack":"TypeError: newTransfer is not a function\n    at file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/controllers/transfer.js:21:31\n    at Layer.handleRequest (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/PROGRESSIVE/Desktop/express-money-transfer/validators/transfer.validator.dto.js:34:9\n    at Layer.handleRequest (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\lib\\layer.js:152:17)\n    at C:\\Users\\PROGRESSIVE\\Desktop\\express-money-transfer\\node_modules\\router\\index.js:295:15","timestamp":"2026-09-08T11:30:26.710Z"}
+{"level":"info","message":"POST /api/v1/transfers 500 41 - 3.765 ms","timestamp":"2026-09-08T11:30:26.713Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T11:31:26.530Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T11:31:26.538Z"}
+{"amount":"19999","fromAccountId":"1788866707858oi1xwq","level":"info","message":"Transfer completed","timestamp":"2026-09-08T11:31:38.467Z","toAccountId":"1788785048069fsp3hn"}
+{"level":"info","message":"POST /api/v1/transfers 201 164 - 1686.214 ms","timestamp":"2026-09-08T11:31:38.479Z"}
+{"level":"info","message":"GET /api/v1/transfers 200 3099 - 154.477 ms","timestamp":"2026-09-08T11:32:06.929Z"}
+{"level":"info","message":"GET /api/v1/transfers 200 3099 - 166.662 ms","timestamp":"2026-09-08T11:34:18.626Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T12:33:59.278Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T12:33:59.291Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T12:42:25.609Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T12:42:25.627Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 1190 - 174.815 ms","timestamp":"2026-09-08T12:42:51.516Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T12:42:54.722Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T12:42:54.738Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T12:47:32.213Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T12:47:32.239Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 1190 - 255.388 ms","timestamp":"2026-09-08T12:47:57.119Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 1190 - 213.114 ms","timestamp":"2026-09-08T12:48:20.824Z"}
+{"level":"info","message":"GET /api/v1/transfers 200 3099 - 232.933 ms","timestamp":"2026-09-08T12:48:47.771Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T12:50:00.792Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T12:50:00.812Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T13:01:11.290Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T13:01:11.307Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-09-08T13:08:00.297Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-09-08T13:08:00.312Z"}
+{"level":"info","message":"GET /api/v1/transfers 200 1060 - 190.340 ms","timestamp":"2026-09-08T13:08:42.556Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 510 - 170.142 ms","timestamp":"2026-09-08T13:09:03.083Z"}
