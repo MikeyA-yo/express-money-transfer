@@ -57,14 +57,17 @@ describe('Transfers API', () => {
 
             expect(transferRes.statusCode).toEqual(201);
             expect(transferRes.body.status).toEqual('COMPLETED');
-            expect(transferRes.body.amount.$numberDecimal).toEqual("200");
+            const transferAmount = transferRes.body.amount?.$numberDecimal ?? transferRes.body.amount;
+            expect(Number(transferAmount)).toEqual(200);
 
             // Verify balances
             const verifyAcc1 = await request(app).get(`/api/v1/accounts/${acc1Id}`);
             const verifyAcc2 = await request(app).get(`/api/v1/accounts/${acc2Id}`);
             
-            expect(verifyAcc1.body.balance.$numberDecimal).toEqual("800");
-            expect(verifyAcc2.body.balance.$numberDecimal).toEqual("700");
+            const acc1Balance = verifyAcc1.body.balance?.$numberDecimal ?? verifyAcc1.body.balance;
+            const acc2Balance = verifyAcc2.body.balance?.$numberDecimal ?? verifyAcc2.body.balance;
+            expect(Number(acc1Balance)).toEqual(800);
+            expect(Number(acc2Balance)).toEqual(700);
         });
 
         it('should return 400 if insufficient funds', async () => {

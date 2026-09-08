@@ -116,11 +116,17 @@ export const InternalServerError = createErrorType(
 export function DuplicateAccountError(message = 'Account already exists for this email', details = null) {
 	const error = DuplicateResourceError(message, details);
 	error.name = 'DuplicateAccountError';
+	Object.setPrototypeOf(error, DuplicateAccountError.prototype);
 	return error;
 }
+DuplicateAccountError.prototype = Object.create(DuplicateResourceError.prototype);
+DuplicateAccountError.prototype.constructor = DuplicateAccountError;
 
 export function InsufficientFundsError(message = 'Insufficient funds', details = null) {
 	const error = BadRequestError(message, details);
 	error.name = 'InsufficientFundsError';
+	Object.setPrototypeOf(error, InsufficientFundsError.prototype);
 	return error;
 }
+InsufficientFundsError.prototype = Object.create(BadRequestError.prototype);
+InsufficientFundsError.prototype.constructor = InsufficientFundsError;
