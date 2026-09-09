@@ -3,7 +3,7 @@ import {
   DuplicateAccountError,
   NotFoundError
 } from "../common/domain-exceptions/domain-exceptions.js";
-import { toAccountResponse, toAccountsResponse } from "../response-schema/account.res.js";
+import { toAccountResponse, toAccountsResponse } from "../response-schema/index.js";
 
 const models = {
   Account

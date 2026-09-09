@@ -6,7 +6,7 @@ import {
     NotFoundError,
     InsufficientFundsError
 } from '../common/domain-exceptions/domain-exceptions.js';
-import { toTransferResponse, toTransfersResponse } from '../response-schema/transfer.res.js';
+import { toTransferResponse, toTransfersResponse } from '../response-schema/index.js';
 
 function toDecimal128(value) {
     return mongoose.Types.Decimal128.fromString(String(value));

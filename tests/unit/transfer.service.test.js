@@ -1,4 +1,5 @@
-import { jest } from '@jest/globals';
+import { describe, it, beforeEach, afterEach, mock } from 'node:test';
+import assert from 'node:assert/strict';
 import mongoose from 'mongoose';
 import {
   newTransfer,
@@ -17,165 +18,179 @@ describe('Transfer Service Unit Tests (Mock Models & Sessions)', () => {
 
   beforeEach(() => {
     mockSession = {
-      withTransaction: jest.fn(async (cb) => await cb()),
-      endSession: jest.fn().mockResolvedValue(undefined)
+      withTransaction: mock.fn(async (cb) => await cb()),
+      endSession: mock.fn(async () => undefined)
     };
 
-    jest.spyOn(mongoose, 'startSession').mockResolvedValue(mockSession);
+    mock.method(mongoose, 'startSession', async () => mockSession);
 
     mockAccountModel = {
-      findOne: jest.fn()
+      findOne: mock.fn()
     };
 
-    mockTransferModel = jest.fn().mockImplementation(function (data) {
+    mockTransferModel = mock.fn(function (data) {
       this.id = data.id || 'mock-transfer-id';
       this.fromAccountId = data.fromAccountId;
       this.toAccountId = data.toAccountId;
       this.amount = data.amount;
-      this.save = jest.fn().mockResolvedValue(this);
-      this.toObject = jest.fn().mockReturnValue({
+      this.save = mock.fn(async () => this);
+      this.toObject = mock.fn(() => ({
         id: this.id,
         fromAccountId: this.fromAccountId,
         toAccountId: this.toAccountId,
         amount: this.amount
-      });
+      }));
     });
-    mockTransferModel.findOne = jest.fn();
-    mockTransferModel.find = jest.fn();
+    mockTransferModel.findOne = mock.fn();
+    mockTransferModel.find = mock.fn();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    mock.reset();
   });
 
   describe('newTransfer', () => {
     it('should throw NotFoundError if sender account does not exist', async () => {
-      const mockQueryFrom = { session: jest.fn().mockResolvedValue(null) };
-      const mockQueryTo = { session: jest.fn().mockResolvedValue({ id: 'acc-2', balance: '100' }) };
+      const mockQueryFrom = { session: mock.fn(async () => null) };
+      const mockQueryTo = { session: mock.fn(async () => ({ id: 'acc-2', balance: '100' })) };
 
-      mockAccountModel.findOne
-        .mockReturnValueOnce(mockQueryFrom)
-        .mockReturnValueOnce(mockQueryTo);
+      mockAccountModel.findOne = mock.fn((filter) => {
+        if (filter?.id === 'acc-1') return mockQueryFrom;
+        return mockQueryTo;
+      });
 
-      await expect(
+      await assert.rejects(
         newTransfer('acc-1', 'acc-2', 50, {
           Account: mockAccountModel,
           Transfer: mockTransferModel
-        })
-      ).rejects.toThrow(NotFoundError);
+        }),
+        NotFoundError
+      );
 
-      expect(mockSession.endSession).toHaveBeenCalled();
+      assert.strictEqual(mockSession.endSession.mock.callCount(), 1);
     });
 
     it('should throw InsufficientFundsError if sender balance is less than transfer amount', async () => {
       const accountFrom = {
         id: 'acc-1',
         balance: '30',
-        save: jest.fn().mockResolvedValue(true)
+        save: mock.fn(async () => true)
       };
       const accountTo = {
         id: 'acc-2',
         balance: '100',
-        save: jest.fn().mockResolvedValue(true)
+        save: mock.fn(async () => true)
       };
 
-      const mockQueryFrom = { session: jest.fn().mockResolvedValue(accountFrom) };
-      const mockQueryTo = { session: jest.fn().mockResolvedValue(accountTo) };
+      const mockQueryFrom = { session: mock.fn(async () => accountFrom) };
+      const mockQueryTo = { session: mock.fn(async () => accountTo) };
 
-      mockAccountModel.findOne
-        .mockReturnValueOnce(mockQueryFrom)
-        .mockReturnValueOnce(mockQueryTo);
+      mockAccountModel.findOne = mock.fn((filter) => {
+        if (filter?.id === 'acc-1') return mockQueryFrom;
+        return mockQueryTo;
+      });
 
-      await expect(
+      await assert.rejects(
         newTransfer('acc-1', 'acc-2', 50, {
           Account: mockAccountModel,
           Transfer: mockTransferModel
-        })
-      ).rejects.toThrow(InsufficientFundsError);
+        }),
+        InsufficientFundsError
+      );
 
-      expect(mockSession.endSession).toHaveBeenCalled();
+      assert.strictEqual(mockSession.endSession.mock.callCount(), 1);
     });
 
     it('should complete transfer, update balances, and return formatted response with status COMPLETED', async () => {
+      const saveFromMock = mock.fn(async () => true);
+      const saveToMock = mock.fn(async () => true);
       const accountFrom = {
         id: 'acc-1',
         balance: '100',
-        save: jest.fn().mockResolvedValue(true)
+        save: saveFromMock
       };
       const accountTo = {
         id: 'acc-2',
         balance: '50',
-        save: jest.fn().mockResolvedValue(true)
+        save: saveToMock
       };
 
-      const mockQueryFrom = { session: jest.fn().mockResolvedValue(accountFrom) };
-      const mockQueryTo = { session: jest.fn().mockResolvedValue(accountTo) };
+      const mockQueryFrom = { session: mock.fn(async () => accountFrom) };
+      const mockQueryTo = { session: mock.fn(async () => accountTo) };
 
-      mockAccountModel.findOne
-        .mockReturnValueOnce(mockQueryFrom)
-        .mockReturnValueOnce(mockQueryTo);
+      mockAccountModel.findOne = mock.fn((filter) => {
+        if (filter?.id === 'acc-1') return mockQueryFrom;
+        return mockQueryTo;
+      });
 
       const result = await newTransfer('acc-1', 'acc-2', 40, {
         Account: mockAccountModel,
         Transfer: mockTransferModel
       });
 
-      expect(result).toHaveProperty('id');
-      expect(result.status).toBe('COMPLETED');
-      expect(result.from).toBe('acc-1');
-      expect(result.to).toBe('acc-2');
-      expect(result.amount).toBe(40);
-      expect(accountFrom.save).toHaveBeenCalled();
-      expect(accountTo.save).toHaveBeenCalled();
-      expect(mockSession.endSession).toHaveBeenCalled();
+      assert.ok(result.id);
+      assert.strictEqual(result.status, 'COMPLETED');
+      assert.strictEqual(result.from, 'acc-1');
+      assert.strictEqual(result.to, 'acc-2');
+      assert.strictEqual(result.amount, 40);
+      assert.strictEqual(saveFromMock.mock.callCount(), 1);
+      assert.strictEqual(saveToMock.mock.callCount(), 1);
+      assert.strictEqual(mockSession.endSession.mock.callCount(), 1);
     });
   });
 
   describe('getTransferById', () => {
     it('should return formatted transfer if found', async () => {
-      mockTransferModel.findOne.mockResolvedValue({
+      mockTransferModel.findOne = mock.fn(async () => ({
         id: 'tr-1',
         fromAccountId: 'acc-1',
         toAccountId: 'acc-2',
         amount: '100',
         status: 'COMPLETED'
-      });
+      }));
 
       const result = await getTransferById('tr-1', { Transfer: mockTransferModel });
 
-      expect(mockTransferModel.findOne).toHaveBeenCalledWith({ id: 'tr-1' });
-      expect(result.id).toBe('tr-1');
-      expect(result.status).toBe('COMPLETED');
-      expect(result.amount).toBe(100);
+      assert.strictEqual(mockTransferModel.findOne.mock.callCount(), 1);
+      assert.deepStrictEqual(mockTransferModel.findOne.mock.calls[0].arguments, [{ id: 'tr-1' }]);
+      assert.strictEqual(result.id, 'tr-1');
+      assert.strictEqual(result.status, 'COMPLETED');
+      assert.strictEqual(result.amount, 100);
     });
 
     it('should throw NotFoundError if transfer does not exist', async () => {
-      mockTransferModel.findOne.mockResolvedValue(null);
+      mockTransferModel.findOne = mock.fn(async () => null);
 
-      await expect(
-        getTransferById('non-existent', { Transfer: mockTransferModel })
-      ).rejects.toThrow(NotFoundError);
+      await assert.rejects(
+        getTransferById('non-existent', { Transfer: mockTransferModel }),
+        NotFoundError
+      );
     });
   });
 
   describe('listTransfers', () => {
     it('should return paginated list of formatted transfers', async () => {
+      const skipMock = mock.fn();
+      const limitMock = mock.fn(async () => [
+        { id: 'tr-1', fromAccountId: 'a1', toAccountId: 'a2', amount: '50', status: 'COMPLETED' },
+        { id: 'tr-2', fromAccountId: 'a2', toAccountId: 'a3', amount: '75', status: 'COMPLETED' }
+      ]);
       const mockQuery = {
-        skip: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue([
-          { id: 'tr-1', fromAccountId: 'a1', toAccountId: 'a2', amount: '50', status: 'COMPLETED' },
-          { id: 'tr-2', fromAccountId: 'a2', toAccountId: 'a3', amount: '75', status: 'COMPLETED' }
-        ])
+        skip: mock.fn(function (s) {
+          skipMock(s);
+          return this;
+        }),
+        limit: limitMock
       };
-      mockTransferModel.find.mockReturnValue(mockQuery);
+      mockTransferModel.find = mock.fn(() => mockQuery);
 
       const result = await listTransfers(1, 10, { Transfer: mockTransferModel });
 
-      expect(mockQuery.skip).toHaveBeenCalledWith(0);
-      expect(mockQuery.limit).toHaveBeenCalledWith(10);
-      expect(result).toHaveLength(2);
-      expect(result[0].amount).toBe(50);
-      expect(result[0].status).toBe('COMPLETED');
+      assert.strictEqual(skipMock.mock.calls[0].arguments[0], 0);
+      assert.strictEqual(limitMock.mock.calls[0].arguments[0], 10);
+      assert.strictEqual(result.length, 2);
+      assert.strictEqual(result[0].amount, 50);
+      assert.strictEqual(result[0].status, 'COMPLETED');
     });
   });
 });

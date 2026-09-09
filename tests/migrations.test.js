@@ -1,14 +1,12 @@
+import { describe, it, before, after, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import mongoose from 'mongoose';
 import { connectTestDB, clearTestDB, closeTestDB } from './setup.js';
-import { jest } from '@jest/globals';
 import migrateMongo from 'migrate-mongo';
 import path from 'path';
 
-jest.setTimeout(3600000);
-
-beforeAll(async () => {
+before(async () => {
     await connectTestDB();
-    // Configure migrate-mongo in-memory to use the test database & project migrations directory
     migrateMongo.config.set({
         mongodb: {
             url: mongoose.connection.client.options.hosts?.[0] || 'mongodb://localhost:27017',
@@ -29,7 +27,7 @@ afterEach(async () => {
     await clearTestDB();
 });
 
-afterAll(async () => {
+after(async () => {
     await closeTestDB();
 });
 
@@ -38,7 +36,7 @@ describe('MongoDB Migrations', () => {
         const db = mongoose.connection.db;
         const client = mongoose.connection.client;
 
-        // 1. Seed unmigrated legacy documents directly using raw collection (bypassing Mongoose schema)
+        // 1. Seed unmigrated legacy documents directly using raw collection
         const accountsColl = db.collection('accounts');
         const legacyDoc = {
             id: 'legacy-1',
@@ -46,43 +44,42 @@ describe('MongoDB Migrations', () => {
             email: 'legacy@example.com',
             balance: 500,
             deleted: false
-            // Note: currency and schemaVersion are absent
         };
         await accountsColl.insertOne(legacyDoc);
 
         // 2. Check initial migration status
         const initialStatus = await migrateMongo.status(db);
-        expect(initialStatus.length).toBeGreaterThan(0);
-        expect(initialStatus[0].appliedAt).toEqual('PENDING');
+        assert.ok(initialStatus.length > 0);
+        assert.strictEqual(initialStatus[0].appliedAt, 'PENDING');
 
         // 3. Run migrations up
         const migrated = await migrateMongo.up(db, client);
-        expect(migrated.length).toBe(1);
+        assert.strictEqual(migrated.length, 1);
 
         // 4. Verify document was updated with new schema fields
         const updatedDoc = await accountsColl.findOne({ id: 'legacy-1' });
-        expect(updatedDoc.currency).toEqual('USD');
-        expect(updatedDoc.schemaVersion).toEqual(1);
+        assert.strictEqual(updatedDoc.currency, 'USD');
+        assert.strictEqual(updatedDoc.schemaVersion, 1);
 
         // 5. Verify changelog collection has recorded the migration
         const changelogColl = db.collection('changelog');
         const changelogEntry = await changelogColl.findOne({ fileName: migrated[0] });
-        expect(changelogEntry).toBeDefined();
-        expect(changelogEntry.appliedAt).toBeInstanceOf(Date);
+        assert.ok(changelogEntry !== null && changelogEntry !== undefined);
+        assert.ok(changelogEntry.appliedAt instanceof Date);
 
         // 6. Test IDEMPOTENCY: running up again should do nothing
         const secondRunMigrated = await migrateMongo.up(db, client);
-        expect(secondRunMigrated.length).toEqual(0);
+        assert.strictEqual(secondRunMigrated.length, 0);
 
         // 7. Test ROLLBACK (down)
         const rolledBack = await migrateMongo.down(db, client);
-        expect(rolledBack.length).toBe(1);
+        assert.strictEqual(rolledBack.length, 1);
 
         const docAfterRollback = await accountsColl.findOne({ id: 'legacy-1' });
-        expect(docAfterRollback.currency).toBeUndefined();
+        assert.strictEqual(docAfterRollback.currency, undefined);
 
         // Changelog entry should be removed
         const changelogAfterRollback = await changelogColl.findOne({ fileName: migrated[0] });
-        expect(changelogAfterRollback).toBeNull();
+        assert.strictEqual(changelogAfterRollback, null);
     });
 });

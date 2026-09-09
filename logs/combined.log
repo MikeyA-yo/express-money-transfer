@@ -317,3 +317,208 @@
 {"level":"info","message":"DELETE /api/v1/accounts/1788874490353kkydil 200 42 - 18.676 ms","timestamp":"2026-09-08T13:34:50.700Z"}
 {"details":{"id":"1788874490353kkydil","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-08T13:34:50.722Z"}
 {"level":"info","message":"POST /api/v1/transfers 404 110 - 13.631 ms","timestamp":"2026-09-08T13:34:50.726Z"}
+{"accountId":"acc-bob","level":"info","message":"Account created","timestamp":"2026-09-09T17:06:10.471Z"}
+{"amount":"50","fromAccountId":"acc-1","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:06:10.491Z","toAccountId":"acc-2"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 32.592 ms","timestamp":"2026-09-09T17:06:36.599Z"}
+{"accountId":"1788973596648rs1b92","level":"info","message":"Account created","timestamp":"2026-09-09T17:06:36.683Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 93 - 39.529 ms","timestamp":"2026-09-09T17:06:36.685Z"}
+{"accountId":"1788973596696frgli0","level":"info","message":"Account created","timestamp":"2026-09-09T17:06:36.709Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 88 - 14.836 ms","timestamp":"2026-09-09T17:06:36.711Z"}
+{"details":{"email":"alice@example.com","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account already exists for this email","statusCode":409,"timestamp":"2026-09-09T17:06:36.728Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 110 - 9.798 ms","timestamp":"2026-09-09T17:06:36.730Z"}
+{"errors":[{"code":"too_small","exact":false,"inclusive":true,"message":"Amount must be a positive number","minimum":0.1,"path":["amount"],"type":"number"}],"level":"error","message":"Validation error:","timestamp":"2026-09-09T17:06:36.741Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 156 - 2.569 ms","timestamp":"2026-09-09T17:06:36.742Z"}
+{"details":{"fromBalance":"1000","transferAmount":"5000"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds","statusCode":400,"timestamp":"2026-09-09T17:06:36.767Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 87 - 15.645 ms","timestamp":"2026-09-09T17:06:36.769Z"}
+{"amount":"350","fromAccountId":"1788973596648rs1b92","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:06:36.810Z","toAccountId":"1788973596696frgli0"}
+{"level":"info","message":"POST /api/v1/transfers 201 197 - 31.980 ms","timestamp":"2026-09-09T17:06:36.812Z"}
+{"level":"info","message":"GET /api/v1/transfers/6aa1921c93e0fb1d8f945083 200 197 - 5.248 ms","timestamp":"2026-09-09T17:06:36.826Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973596648rs1b92 200 92 - 4.506 ms","timestamp":"2026-09-09T17:06:36.840Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973596696frgli0 200 88 - 3.760 ms","timestamp":"2026-09-09T17:06:36.851Z"}
+{"level":"info","message":"GET /api/v1/transfers?page=1&limit=10 200 199 - 4.133 ms","timestamp":"2026-09-09T17:06:36.862Z"}
+{"level":"info","message":"PATCH /api/v1/accounts/1788973596648rs1b92 200 110 - 15.416 ms","timestamp":"2026-09-09T17:06:36.887Z"}
+{"level":"info","message":"DELETE /api/v1/accounts/1788973596696frgli0 200 42 - 7.721 ms","timestamp":"2026-09-09T17:06:36.901Z"}
+{"details":{"id":"1788973596696frgli0","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-09T17:06:36.918Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 110 - 10.045 ms","timestamp":"2026-09-09T17:06:36.919Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 26.252 ms","timestamp":"2026-09-09T17:06:56.856Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 303 - 7.586 ms","timestamp":"2026-09-09T17:06:56.925Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-09T17:06:56.945Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 401 35 - 3.677 ms","timestamp":"2026-09-09T17:06:56.947Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 305 - 1.497 ms","timestamp":"2026-09-09T17:06:56.966Z"}
+{"details":{"requiredRoles":["admin"],"userRole":"user"},"level":"warn","message":"DOMAIN EXCEPTION: Forbidden: Insufficient permissions","statusCode":403,"timestamp":"2026-09-09T17:06:56.977Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 403 103 - 4.244 ms","timestamp":"2026-09-09T17:06:56.979Z"}
+{"accountId":"1788973616999vqs53f","level":"info","message":"Account created","timestamp":"2026-09-09T17:06:57.033Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 97 - 38.132 ms","timestamp":"2026-09-09T17:06:57.034Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 315 - 1.207 ms","timestamp":"2026-09-09T17:06:57.043Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 200 64 - 14.564 ms","timestamp":"2026-09-09T17:06:57.066Z"}
+{"accountId":"acc-bob","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:11.185Z"}
+{"amount":"50","fromAccountId":"acc-1","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:07:11.213Z","toAccountId":"acc-2"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 49.984 ms","timestamp":"2026-09-09T17:07:16.279Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 55.072 ms","timestamp":"2026-09-09T17:07:16.296Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 303 - 18.020 ms","timestamp":"2026-09-09T17:07:16.418Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-09T17:07:16.453Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 401 35 - 4.237 ms","timestamp":"2026-09-09T17:07:16.455Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 305 - 1.919 ms","timestamp":"2026-09-09T17:07:16.485Z"}
+{"accountId":"1788973636272tbe01b","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:16.482Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 88 - 235.652 ms","timestamp":"2026-09-09T17:07:16.501Z"}
+{"details":{"requiredRoles":["admin"],"userRole":"user"},"level":"warn","message":"DOMAIN EXCEPTION: Forbidden: Insufficient permissions","statusCode":403,"timestamp":"2026-09-09T17:07:16.506Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 403 103 - 12.546 ms","timestamp":"2026-09-09T17:07:16.508Z"}
+{"accountId":"1788973636380oicvxh","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:16.529Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 93 - 156.251 ms","timestamp":"2026-09-09T17:07:16.531Z"}
+{"accountId":"1788973636544k3rrzg","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:16.562Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 88 - 19.910 ms","timestamp":"2026-09-09T17:07:16.564Z"}
+{"details":{"email":"alice@example.com","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account already exists for this email","statusCode":409,"timestamp":"2026-09-09T17:07:16.586Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 110 - 10.679 ms","timestamp":"2026-09-09T17:07:16.588Z"}
+{"errors":[{"code":"too_small","exact":false,"inclusive":true,"message":"Amount must be a positive number","minimum":0.1,"path":["amount"],"type":"number"}],"level":"error","message":"Validation error:","timestamp":"2026-09-09T17:07:16.602Z"}
+{"accountId":"1788973636548m8fe59","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:16.595Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 93 - 48.438 ms","timestamp":"2026-09-09T17:07:16.597Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 156 - 7.192 ms","timestamp":"2026-09-09T17:07:16.608Z"}
+{"details":{"email":"duplicate@example.com","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account already exists for this email","statusCode":409,"timestamp":"2026-09-09T17:07:16.618Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 114 - 11.480 ms","timestamp":"2026-09-09T17:07:16.620Z"}
+{"details":{"fromBalance":"1000","transferAmount":"5000"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds","statusCode":400,"timestamp":"2026-09-09T17:07:16.647Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 87 - 29.532 ms","timestamp":"2026-09-09T17:07:16.648Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 7.069 ms","timestamp":"2026-09-09T17:07:16.654Z"}
+{"amount":"350","fromAccountId":"1788973636380oicvxh","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:07:16.704Z","toAccountId":"1788973636544k3rrzg"}
+{"level":"info","message":"POST /api/v1/transfers 201 197 - 39.756 ms","timestamp":"2026-09-09T17:07:16.706Z"}
+{"level":"info","message":"GET /api/v1/transfers/6aa19244bce7428c77027bbe 200 197 - 6.179 ms","timestamp":"2026-09-09T17:07:16.722Z"}
+{"accountId":"1788973636545azhzdt","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:16.731Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 97 - 193.729 ms","timestamp":"2026-09-09T17:07:16.734Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973636380oicvxh 200 92 - 5.484 ms","timestamp":"2026-09-09T17:07:16.737Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 315 - 1.892 ms","timestamp":"2026-09-09T17:07:16.749Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973636544k3rrzg 200 88 - 4.447 ms","timestamp":"2026-09-09T17:07:16.751Z"}
+{"level":"info","message":"GET /api/v1/transfers?page=1&limit=10 200 199 - 5.643 ms","timestamp":"2026-09-09T17:07:16.767Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 200 64 - 20.281 ms","timestamp":"2026-09-09T17:07:16.781Z"}
+{"level":"info","message":"PATCH /api/v1/accounts/1788973636380oicvxh 200 110 - 25.966 ms","timestamp":"2026-09-09T17:07:16.802Z"}
+{"level":"info","message":"DELETE /api/v1/accounts/1788973636544k3rrzg 200 42 - 8.439 ms","timestamp":"2026-09-09T17:07:16.817Z"}
+{"details":{"id":"1788973636544k3rrzg","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-09T17:07:16.836Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 110 - 11.461 ms","timestamp":"2026-09-09T17:07:16.838Z"}
+{"details":{"id":"nonexistent1","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-09T17:07:16.988Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 103 - 90.346 ms","timestamp":"2026-09-09T17:07:17.004Z"}
+{"accountId":"1788973637038eevog9","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:17.083Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 86 - 47.543 ms","timestamp":"2026-09-09T17:07:17.084Z"}
+{"accountId":"1788973637095ox24tu","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:17.111Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 81 - 17.947 ms","timestamp":"2026-09-09T17:07:17.113Z"}
+{"amount":"200","fromAccountId":"1788973637038eevog9","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:07:17.176Z","toAccountId":"1788973637095ox24tu"}
+{"level":"info","message":"POST /api/v1/transfers 201 197 - 53.119 ms","timestamp":"2026-09-09T17:07:17.178Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973637038eevog9 200 85 - 5.926 ms","timestamp":"2026-09-09T17:07:17.193Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973637095ox24tu 200 81 - 5.110 ms","timestamp":"2026-09-09T17:07:17.209Z"}
+{"accountId":"1788973637250ugcszi","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:17.264Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 85 - 15.612 ms","timestamp":"2026-09-09T17:07:17.266Z"}
+{"accountId":"1788973637276i6jcxs","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:17.288Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 81 - 13.166 ms","timestamp":"2026-09-09T17:07:17.289Z"}
+{"details":{"fromBalance":"100","transferAmount":"200"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds","statusCode":400,"timestamp":"2026-09-09T17:07:17.310Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 85 - 12.682 ms","timestamp":"2026-09-09T17:07:17.312Z"}
+{"accountId":"acc-bob","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:49.096Z"}
+{"amount":"50","fromAccountId":"acc-1","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:07:49.122Z","toAccountId":"acc-2"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 116.150 ms","timestamp":"2026-09-09T17:07:53.870Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 303 - 12.949 ms","timestamp":"2026-09-09T17:07:53.990Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-09T17:07:54.040Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 401 35 - 4.844 ms","timestamp":"2026-09-09T17:07:54.042Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 305 - 1.810 ms","timestamp":"2026-09-09T17:07:54.064Z"}
+{"details":{"requiredRoles":["admin"],"userRole":"user"},"level":"warn","message":"DOMAIN EXCEPTION: Forbidden: Insufficient permissions","statusCode":403,"timestamp":"2026-09-09T17:07:54.083Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 403 103 - 8.077 ms","timestamp":"2026-09-09T17:07:54.085Z"}
+{"accountId":"1788973674114z2janu","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:54.175Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 97 - 68.289 ms","timestamp":"2026-09-09T17:07:54.177Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 315 - 1.244 ms","timestamp":"2026-09-09T17:07:54.190Z"}
+{"accountId":"1788973673990b88ryf","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:54.204Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 200 64 - 21.519 ms","timestamp":"2026-09-09T17:07:54.223Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 88 - 244.983 ms","timestamp":"2026-09-09T17:07:54.228Z"}
+{"accountId":"17889736742994hisno","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:54.324Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 93 - 28.669 ms","timestamp":"2026-09-09T17:07:54.327Z"}
+{"details":{"email":"duplicate@example.com","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account already exists for this email","statusCode":409,"timestamp":"2026-09-09T17:07:54.351Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 114 - 13.940 ms","timestamp":"2026-09-09T17:07:54.354Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 6.528 ms","timestamp":"2026-09-09T17:07:54.387Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 78.763 ms","timestamp":"2026-09-09T17:07:54.449Z"}
+{"accountId":"1788973674525sqi2h3","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:54.588Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 93 - 69.917 ms","timestamp":"2026-09-09T17:07:54.591Z"}
+{"accountId":"1788973674609bl75d3","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:54.626Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 88 - 24.207 ms","timestamp":"2026-09-09T17:07:54.628Z"}
+{"details":{"email":"alice@example.com","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account already exists for this email","statusCode":409,"timestamp":"2026-09-09T17:07:54.649Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 110 - 11.720 ms","timestamp":"2026-09-09T17:07:54.651Z"}
+{"errors":[{"code":"too_small","exact":false,"inclusive":true,"message":"Amount must be a positive number","minimum":0.1,"path":["amount"],"type":"number"}],"level":"error","message":"Validation error:","timestamp":"2026-09-09T17:07:54.668Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 156 - 2.764 ms","timestamp":"2026-09-09T17:07:54.670Z"}
+{"details":{"fromBalance":"1000","transferAmount":"5000"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds","statusCode":400,"timestamp":"2026-09-09T17:07:54.698Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 87 - 18.429 ms","timestamp":"2026-09-09T17:07:54.700Z"}
+{"amount":"350","fromAccountId":"1788973674525sqi2h3","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:07:54.761Z","toAccountId":"1788973674609bl75d3"}
+{"level":"info","message":"POST /api/v1/transfers 201 197 - 51.117 ms","timestamp":"2026-09-09T17:07:54.762Z"}
+{"level":"info","message":"GET /api/v1/transfers/6aa1926aa7425aab9037f908 200 197 - 7.062 ms","timestamp":"2026-09-09T17:07:54.778Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973674525sqi2h3 200 92 - 6.663 ms","timestamp":"2026-09-09T17:07:54.798Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973674609bl75d3 200 88 - 5.558 ms","timestamp":"2026-09-09T17:07:54.813Z"}
+{"level":"info","message":"GET /api/v1/transfers?page=1&limit=10 200 199 - 5.681 ms","timestamp":"2026-09-09T17:07:54.828Z"}
+{"level":"info","message":"PATCH /api/v1/accounts/1788973674525sqi2h3 200 110 - 34.956 ms","timestamp":"2026-09-09T17:07:54.872Z"}
+{"level":"info","message":"DELETE /api/v1/accounts/1788973674609bl75d3 200 42 - 18.135 ms","timestamp":"2026-09-09T17:07:54.898Z"}
+{"details":{"id":"1788973674609bl75d3","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-09T17:07:54.915Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 110 - 9.126 ms","timestamp":"2026-09-09T17:07:54.916Z"}
+{"details":{"id":"nonexistent1","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-09T17:07:54.997Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 103 - 270.309 ms","timestamp":"2026-09-09T17:07:55.015Z"}
+{"accountId":"178897367505165b9kp","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:55.101Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 86 - 52.471 ms","timestamp":"2026-09-09T17:07:55.103Z"}
+{"accountId":"1788973675131hng4u8","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:55.215Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 81 - 86.274 ms","timestamp":"2026-09-09T17:07:55.217Z"}
+{"amount":"200","fromAccountId":"178897367505165b9kp","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:07:55.272Z","toAccountId":"1788973675131hng4u8"}
+{"level":"info","message":"POST /api/v1/transfers 201 197 - 45.948 ms","timestamp":"2026-09-09T17:07:55.273Z"}
+{"level":"info","message":"GET /api/v1/accounts/178897367505165b9kp 200 85 - 6.373 ms","timestamp":"2026-09-09T17:07:55.289Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973675131hng4u8 200 81 - 5.209 ms","timestamp":"2026-09-09T17:07:55.305Z"}
+{"accountId":"1788973675328del4m9","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:55.342Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 85 - 14.778 ms","timestamp":"2026-09-09T17:07:55.343Z"}
+{"accountId":"1788973675350x6v14i","level":"info","message":"Account created","timestamp":"2026-09-09T17:07:55.360Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 81 - 10.561 ms","timestamp":"2026-09-09T17:07:55.361Z"}
+{"details":{"fromBalance":"100","transferAmount":"200"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds","statusCode":400,"timestamp":"2026-09-09T17:07:55.380Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 85 - 10.973 ms","timestamp":"2026-09-09T17:07:55.382Z"}
+{"accountId":"acc-bob","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:37.909Z"}
+{"amount":"50","fromAccountId":"acc-1","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:08:37.937Z","toAccountId":"acc-2"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 54.234 ms","timestamp":"2026-09-09T17:08:42.188Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 80.252 ms","timestamp":"2026-09-09T17:08:42.235Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 303 - 8.462 ms","timestamp":"2026-09-09T17:08:42.322Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-09T17:08:42.348Z"}
+{"accountId":"1788973722286mlitgx","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:42.343Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 401 35 - 3.361 ms","timestamp":"2026-09-09T17:08:42.350Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 93 - 67.908 ms","timestamp":"2026-09-09T17:08:42.345Z"}
+{"accountId":"1788973722356hzjyh4","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:42.369Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 305 - 2.121 ms","timestamp":"2026-09-09T17:08:42.371Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 88 - 14.911 ms","timestamp":"2026-09-09T17:08:42.371Z"}
+{"details":{"requiredRoles":["admin"],"userRole":"user"},"level":"warn","message":"DOMAIN EXCEPTION: Forbidden: Insufficient permissions","statusCode":403,"timestamp":"2026-09-09T17:08:42.384Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 403 103 - 5.651 ms","timestamp":"2026-09-09T17:08:42.386Z"}
+{"details":{"email":"alice@example.com","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account already exists for this email","statusCode":409,"timestamp":"2026-09-09T17:08:42.389Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 110 - 10.708 ms","timestamp":"2026-09-09T17:08:42.391Z"}
+{"errors":[{"code":"too_small","exact":false,"inclusive":true,"message":"Amount must be a positive number","minimum":0.1,"path":["amount"],"type":"number"}],"level":"error","message":"Validation error:","timestamp":"2026-09-09T17:08:42.404Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 156 - 2.801 ms","timestamp":"2026-09-09T17:08:42.406Z"}
+{"details":{"fromBalance":"1000","transferAmount":"5000"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds","statusCode":400,"timestamp":"2026-09-09T17:08:42.433Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 87 - 17.544 ms","timestamp":"2026-09-09T17:08:42.434Z"}
+{"accountId":"17889737224101spz76","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:42.464Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 97 - 60.487 ms","timestamp":"2026-09-09T17:08:42.465Z"}
+{"level":"info","message":"POST /api/v1/auth/token 200 315 - 1.308 ms","timestamp":"2026-09-09T17:08:42.476Z"}
+{"amount":"350","fromAccountId":"1788973722286mlitgx","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:08:42.484Z","toAccountId":"1788973722356hzjyh4"}
+{"level":"info","message":"POST /api/v1/transfers 201 197 - 41.125 ms","timestamp":"2026-09-09T17:08:42.485Z"}
+{"level":"info","message":"GET /api/v1/transfers/6aa1929aedc766b2917d92a1 200 197 - 6.293 ms","timestamp":"2026-09-09T17:08:42.501Z"}
+{"level":"info","message":"GET /api/v1/admin/stats 200 64 - 22.683 ms","timestamp":"2026-09-09T17:08:42.508Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973722286mlitgx 200 92 - 5.846 ms","timestamp":"2026-09-09T17:08:42.516Z"}
+{"level":"info","message":"GET /api/v1/accounts/1788973722356hzjyh4 200 88 - 4.963 ms","timestamp":"2026-09-09T17:08:42.531Z"}
+{"level":"info","message":"GET /api/v1/transfers?page=1&limit=10 200 199 - 5.247 ms","timestamp":"2026-09-09T17:08:42.548Z"}
+{"details":{"id":"nonexistent1","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-09T17:08:42.547Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 103 - 102.954 ms","timestamp":"2026-09-09T17:08:42.563Z"}
+{"level":"info","message":"PATCH /api/v1/accounts/1788973722286mlitgx 200 110 - 22.938 ms","timestamp":"2026-09-09T17:08:42.581Z"}
+{"level":"info","message":"DELETE /api/v1/accounts/1788973722356hzjyh4 200 42 - 8.850 ms","timestamp":"2026-09-09T17:08:42.597Z"}
+{"accountId":"1788973722525zfzzx0","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:42.598Z"}
+{"details":{"id":"1788973722356hzjyh4","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-09T17:08:42.612Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 110 - 8.848 ms","timestamp":"2026-09-09T17:08:42.613Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 88 - 99.201 ms","timestamp":"2026-09-09T17:08:42.618Z"}
+{"accountId":"17889737225957m4a38","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:42.636Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 86 - 44.102 ms","timestamp":"2026-09-09T17:08:42.638Z"}
+{"accountId":"17889737226497fv3nl","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:42.664Z"}
+{"accountId":"1788973722651zon90e","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:42.664Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 93 - 15.104 ms","timestamp":"2026-09-09T17:08:42.666Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 81 - 16.808 ms","timestamp":"2026-09-09T17:08:42.666Z"}
+{"details":{"email":"duplicate@example.com","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account already exists for this email","statusCode":409,"timestamp":"2026-09-09T17:08:42.687Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 114 - 12.848 ms","timestamp":"2026-09-09T17:08:42.689Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 6.159 ms","timestamp":"2026-09-09T17:08:42.720Z"}
+{"amount":"200","fromAccountId":"17889737225957m4a38","level":"info","message":"Transfer completed","timestamp":"2026-09-09T17:08:42.721Z","toAccountId":"17889737226497fv3nl"}
+{"level":"info","message":"POST /api/v1/transfers 201 197 - 46.727 ms","timestamp":"2026-09-09T17:08:42.723Z"}
+{"level":"info","message":"GET /api/v1/accounts/17889737225957m4a38 200 85 - 5.837 ms","timestamp":"2026-09-09T17:08:42.772Z"}
+{"level":"info","message":"GET /api/v1/accounts/17889737226497fv3nl 200 81 - 5.942 ms","timestamp":"2026-09-09T17:08:42.788Z"}
+{"accountId":"1788973722846nphhhw","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:42.859Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 85 - 14.402 ms","timestamp":"2026-09-09T17:08:42.861Z"}
+{"accountId":"1788973722871cqsplc","level":"info","message":"Account created","timestamp":"2026-09-09T17:08:42.884Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 81 - 14.492 ms","timestamp":"2026-09-09T17:08:42.886Z"}
+{"details":{"fromBalance":"100","transferAmount":"200"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds","statusCode":400,"timestamp":"2026-09-09T17:08:42.908Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 85 - 11.932 ms","timestamp":"2026-09-09T17:08:42.910Z"}

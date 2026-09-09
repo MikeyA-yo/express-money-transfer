@@ -1,11 +1,10 @@
+import { describe, it, before, after, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import request from 'supertest';
 import app from '../app.js';
 import { connectTestDB, clearTestDB, closeTestDB } from './setup.js';
-import { jest } from '@jest/globals';
 
-jest.setTimeout(3600000); // 60 minutes to allow MongoDB binary download on slow networks
-
-beforeAll(async () => {
+before(async () => {
     await connectTestDB();
 });
 
@@ -13,7 +12,7 @@ afterEach(async () => {
     await clearTestDB();
 });
 
-afterAll(async () => {
+after(async () => {
     await closeTestDB();
 });
 
@@ -27,10 +26,9 @@ describe('Accounts API', () => {
                     email: 'test@example.com',
                     balance: 100
                 });
-            if (res.statusCode !== 201) console.log("Response Body:", res.body);
-            expect(res.statusCode).toEqual(201);
-            expect(res.body).toHaveProperty('id');
-            expect(res.body.name).toEqual('Test User');
+            assert.strictEqual(res.statusCode, 201);
+            assert.ok('id' in res.body);
+            assert.strictEqual(res.body.name, 'Test User');
         });
         
         it('should return 409 if account already exists', async () => {
@@ -49,15 +47,15 @@ describe('Accounts API', () => {
                     email: 'duplicate@example.com',
                     balance: 100
                 });
-            expect(res.statusCode).toEqual(409);
+            assert.strictEqual(res.statusCode, 409);
         });
     });
 
     describe('GET /api/v1/accounts', () => {
         it('should return empty list if no accounts', async () => {
             const res = await request(app).get('/api/v1/accounts');
-            expect(res.statusCode).toEqual(200);
-            expect(res.body).toEqual([]);
+            assert.strictEqual(res.statusCode, 200);
+            assert.deepStrictEqual(res.body, []);
         });
     });
 });

@@ -2,8 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import mongoSanitize from 'express-mongo-sanitize';
-import accountRoutes from './routes/accounts.js';
-import transferRoutes from './routes/transfer.js';
+import router from './routes/index.js';
 import logger from './config/logger.js';
 
 const app = express();
@@ -31,8 +30,7 @@ app.use(morgan(morganFormat, {
 }));
 
 // Routes
-app.use('/api/v1/accounts', accountRoutes);
-app.use('/api/v1/transfers', transferRoutes);
+app.use('/api/v1/', router);
 
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
