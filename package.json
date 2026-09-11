@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "node --test --test-timeout=3600000",
+    "seed": "node seed.js",
     "start": "node server.js",
     "watch": "node --watch server.js",
     "migrate:create": "migrate-mongo create",
@@ -17,6 +18,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-mongo-sanitize": "^2.2.0",

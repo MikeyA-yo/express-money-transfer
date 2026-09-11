@@ -1,29 +1,30 @@
 import { Router } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import { generateToken } from '../services/auth.js';
-import { BadRequestError } from '../common/domain-exceptions/domain-exceptions.js';
+import { authenticate } from '../middlewares/index.js';
+import {
+  signupHandler,
+  loginHandler,
+  getProfileHandler,
+  issueTokenHandler
+} from '../controllers/auth.js';
 
 const router = Router();
 
 /**
- * Issue an authentication token for testing or client sessions
- * POST /api/v1/auth/token
+ * Public Authentication Endpoints
  */
-router.post('/token', (req, res) => {
-  const { email, role = 'user', id } = req.body || {};
+// Register a new user, create an account with a random balance, and link accountId
+router.post('/signup', signupHandler());
 
-  if (!email) {
-    throw BadRequestError('Email is required to issue a token');
-  }
+// Authenticate user or admin with email and password
+router.post('/login', loginHandler());
 
-  const userId = id || `user-${Date.now()}`;
-  const payload = { id: userId, email, role };
-  const token = generateToken(payload);
+// Issue a token for testing / token generator
+router.post('/token', issueTokenHandler());
 
-  return res.status(StatusCodes.OK).json({
-    token,
-    user: payload
-  });
-});
+/**
+ * Protected Authentication Endpoints
+ * Uses authenticate middleware to verify token and identify current user/admin
+ */
+router.get('/me', authenticate(), getProfileHandler());
 
 export default router;

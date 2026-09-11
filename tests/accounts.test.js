@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import request from 'supertest';
 import app from '../app.js';
 import { connectTestDB, clearTestDB, closeTestDB } from './setup.js';
+import { generateToken } from '../services/auth.js';
 
 before(async () => {
     await connectTestDB();
@@ -52,10 +53,18 @@ describe('Accounts API', () => {
     });
 
     describe('GET /api/v1/accounts', () => {
-        it('should return empty list if no accounts', async () => {
-            const res = await request(app).get('/api/v1/accounts');
+        it('should return empty list if no accounts when authenticated as admin', async () => {
+            const adminToken = generateToken({ id: 'adm-test', email: 'admin@bank.com', role: 'admin' });
+            const res = await request(app)
+                .get('/api/v1/accounts')
+                .set('Authorization', `Bearer ${adminToken}`);
             assert.strictEqual(res.statusCode, 200);
             assert.deepStrictEqual(res.body, []);
+        });
+
+        it('should reject unauthenticated access with 401', async () => {
+            const res = await request(app).get('/api/v1/accounts');
+            assert.strictEqual(res.statusCode, 401);
         });
     });
 });

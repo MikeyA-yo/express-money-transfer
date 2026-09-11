@@ -17,8 +17,16 @@ const models = {
     Account
 };
 
+ function assertAccountBelongsToUser(account, userId) {
+    if (account.userId !== userId) {
+        throw new UnauthorizedError('Account does not belong to the authenticated user', { resource: 'Account', id: account.id });
+    }}
+
+
 export async function newTransfer(fromAccountId, toAccountId, amount, { Transfer = models.Transfer, Account = models.Account } = {}) {
+    assertAccountBelongsToUser(await Account.findOne({ id: fromAccountId }), req.user.id);
     const session = await mongoose.startSession();
+
     let transfer;
     try {
         await session.withTransaction(async () => {

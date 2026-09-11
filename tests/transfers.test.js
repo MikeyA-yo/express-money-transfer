@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import request from 'supertest';
 import app from '../app.js';
 import { connectTestDB, clearTestDB, closeTestDB } from './setup.js';
+import { generateToken } from '../services/auth.js';
 
 before(async () => {
     await connectTestDB();
@@ -17,10 +18,38 @@ after(async () => {
 });
 
 describe('Transfers API', () => {
+    const userToken = generateToken({ id: 'test-user-id', email: 'user@example.com', role: 'user' });
+    const adminToken = generateToken({ id: 'test-admin-id', email: 'admin@example.com', role: 'admin' });
+
     describe('POST /api/v1/transfers', () => {
+        it('should return 401 if unauthenticated', async () => {
+            const res = await request(app)
+                .post('/api/v1/transfers')
+                .send({
+                    fromAccountId: 'acc1',
+                    toAccountId: 'acc2',
+                    amount: 100
+                });
+            assert.strictEqual(res.statusCode, 401);
+        });
+
+        it('should return 401 if user has insufficient permissions (e.g. admin instead of user)', async () => {
+            const res = await request(app)
+                .post('/api/v1/transfers')
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({
+                    fromAccountId: 'acc1',
+                    toAccountId: 'acc2',
+                    amount: 100
+                });
+            assert.strictEqual(res.statusCode, 401);
+            assert.strictEqual(res.body.error, 'Insufficient permissions');
+        });
+
         it('should return 404 if accounts do not exist', async () => {
             const res = await request(app)
                 .post('/api/v1/transfers')
+                .set('Authorization', `Bearer ${userToken}`)
                 .send({
                     fromAccountId: 'nonexistent1',
                     toAccountId: 'nonexistent2',
@@ -48,6 +77,7 @@ describe('Transfers API', () => {
             // Perform transfer
             const transferRes = await request(app)
                 .post('/api/v1/transfers')
+                .set('Authorization', `Bearer ${userToken}`)
                 .send({
                     fromAccountId: acc1Id,
                     toAccountId: acc2Id,
@@ -60,8 +90,12 @@ describe('Transfers API', () => {
             assert.strictEqual(Number(transferAmount), 200);
 
             // Verify balances
-            const verifyAcc1 = await request(app).get(`/api/v1/accounts/${acc1Id}`);
-            const verifyAcc2 = await request(app).get(`/api/v1/accounts/${acc2Id}`);
+            const verifyAcc1 = await request(app)
+                .get(`/api/v1/accounts/${acc1Id}`)
+                .set('Authorization', `Bearer ${userToken}`);
+            const verifyAcc2 = await request(app)
+                .get(`/api/v1/accounts/${acc2Id}`)
+                .set('Authorization', `Bearer ${userToken}`);
             
             const acc1Balance = verifyAcc1.body.balance?.$numberDecimal ?? verifyAcc1.body.balance;
             const acc2Balance = verifyAcc2.body.balance?.$numberDecimal ?? verifyAcc2.body.balance;
@@ -88,6 +122,7 @@ describe('Transfers API', () => {
             // Perform transfer
             const transferRes = await request(app)
                 .post('/api/v1/transfers')
+                .set('Authorization', `Bearer ${userToken}`)
                 .send({
                     fromAccountId: acc1Id,
                     toAccountId: acc2Id,

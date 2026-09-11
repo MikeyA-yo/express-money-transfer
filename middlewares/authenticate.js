@@ -12,7 +12,10 @@ export const authenticate = ({ verifyToken = authService.verifyToken } = {}) => 
     throw UnauthorizedError('Authentication required');
   }
 
-  const token = authHeader.split(' ')[1];
+  const [scheme, token] = authHeader.split(' ');
+  if(scheme !== 'Bearer') {
+    throw UnauthorizedError('Invalid authentication scheme');
+  }
   if (!token) {
     throw UnauthorizedError('Authentication token missing');
   }
@@ -25,5 +28,26 @@ export const authenticate = ({ verifyToken = authService.verifyToken } = {}) => 
     throw UnauthorizedError('Invalid or expired token', { reason: error.message });
   }
 };
+
+export const requireRole = (role) => (req, res, next) => {
+  if (!req.user || req.user.role !== role) {
+    throw UnauthorizedError('Insufficient permissions');
+  }
+  next();
+};
+
+export const requireRoles = (roles) => (req, res, next) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    throw UnauthorizedError('Insufficient permissions');
+  }
+  next();
+};
+
+export const requireAllRoles = (roles) => (req, res, next) => {
+  if (!req.user || !roles.every(role => req.user.roles.includes(role))) {
+    throw UnauthorizedError('Insufficient permissions');
+  }
+  next();
+}
 
 export default authenticate();

@@ -1,6 +1,6 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { responseTime, requestId, authenticate, authorize } from '../../middlewares/index.js';
+import { responseTime, requestId, authenticate, authorize, requireRole, requireRoles } from '../../middlewares/index.js';
 import { UnauthorizedError, ForbiddenError } from '../../common/domain-exceptions/domain-exceptions.js';
 
 describe('Middlewares Unit Tests', () => {
@@ -137,6 +137,36 @@ describe('Middlewares Unit Tests', () => {
       const next = mock.fn();
 
       authorize('admin')(req, res, next);
+      assert.strictEqual(next.mock.callCount(), 1);
+    });
+  });
+
+  describe('requireRole middleware', () => {
+    it('should throw UnauthorizedError if req.user is missing or role does not match', () => {
+      const next = mock.fn();
+      assert.throws(() => requireRole('admin')({}, {}, next), UnauthorizedError);
+      assert.throws(() => requireRole('admin')({ user: { role: 'user' } }, {}, next), UnauthorizedError);
+      assert.strictEqual(next.mock.callCount(), 0);
+    });
+
+    it('should call next() if req.user role matches', () => {
+      const next = mock.fn();
+      requireRole('admin')({ user: { role: 'admin' } }, {}, next);
+      assert.strictEqual(next.mock.callCount(), 1);
+    });
+  });
+
+  describe('requireRoles middleware', () => {
+    it('should throw UnauthorizedError if req.user is missing or role is not in roles list', () => {
+      const next = mock.fn();
+      assert.throws(() => requireRoles(['admin', 'superadmin'])({}, {}, next), UnauthorizedError);
+      assert.throws(() => requireRoles(['admin', 'superadmin'])({ user: { role: 'user' } }, {}, next), UnauthorizedError);
+      assert.strictEqual(next.mock.callCount(), 0);
+    });
+
+    it('should call next() if req.user role is in roles list', () => {
+      const next = mock.fn();
+      requireRoles(['admin', 'superadmin'])({ user: { role: 'superadmin' } }, {}, next);
       assert.strictEqual(next.mock.callCount(), 1);
     });
   });

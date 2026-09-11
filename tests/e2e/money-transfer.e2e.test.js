@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import request from 'supertest';
 import app from '../../app.js';
 import { connectTestDB, clearTestDB, closeTestDB } from '../setup.js';
+import { generateToken } from '../../services/auth.js';
 
 before(async () => {
   await connectTestDB();
@@ -17,11 +18,20 @@ after(async () => {
 });
 
 describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
+  const adminToken = generateToken({ id: 'admin-e2e', email: 'admin@example.com', role: 'admin' });
+  const userToken = generateToken({ id: 'user-e2e', email: 'alice@example.com', role: 'user' });
+
   it('should execute the full user journey: onboarding, transfers, audits, balance updates, and edge cases', async () => {
     // ----------------------------------------------------
-    // STEP 1: Verify Security Headers (Helmet middleware)
+    // STEP 1: Verify Security Headers (Helmet middleware) & Admin Access
     // ----------------------------------------------------
-    const healthCheck = await request(app).get('/api/v1/accounts');
+    const unauthCheck = await request(app).get('/api/v1/accounts');
+    assert.strictEqual(unauthCheck.statusCode, 401);
+
+    const healthCheck = await request(app)
+      .get('/api/v1/accounts')
+      .set('Authorization', `Bearer ${adminToken}`);
+    assert.strictEqual(healthCheck.statusCode, 200);
     assert.ok('x-dns-prefetch-control' in healthCheck.headers);
     assert.strictEqual(healthCheck.headers['x-content-type-options'], 'nosniff');
 
@@ -70,6 +80,7 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     // ----------------------------------------------------
     const invalidTransfer = await request(app)
       .post('/api/v1/transfers')
+      .set('Authorization', `Bearer ${userToken}`)
       .send({
         fromAccountId: aliceId,
         toAccountId: bobId,
@@ -82,6 +93,7 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     // ----------------------------------------------------
     const overdrawTransfer = await request(app)
       .post('/api/v1/transfers')
+      .set('Authorization', `Bearer ${userToken}`)
       .send({
         fromAccountId: aliceId,
         toAccountId: bobId,
@@ -95,6 +107,7 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     // ----------------------------------------------------
     const transferRes = await request(app)
       .post('/api/v1/transfers')
+      .set('Authorization', `Bearer ${userToken}`)
       .send({
         fromAccountId: aliceId,
         toAccountId: bobId,
@@ -110,7 +123,9 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     // ----------------------------------------------------
     // STEP 7: Audit & Verify Individual Transfer Record
     // ----------------------------------------------------
-    const fetchTransferRes = await request(app).get(`/api/v1/transfers/${transferId}`);
+    const fetchTransferRes = await request(app)
+      .get(`/api/v1/transfers/${transferId}`)
+      .set('Authorization', `Bearer ${userToken}`);
     assert.strictEqual(fetchTransferRes.statusCode, 200);
     assert.strictEqual(fetchTransferRes.body.id, transferId);
     assert.strictEqual(fetchTransferRes.body.status, 'COMPLETED');
@@ -119,8 +134,12 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     // ----------------------------------------------------
     // STEP 8: Verify Real-Time Account Balances Post-Transfer
     // ----------------------------------------------------
-    const aliceAccount = await request(app).get(`/api/v1/accounts/${aliceId}`);
-    const bobAccount = await request(app).get(`/api/v1/accounts/${bobId}`);
+    const aliceAccount = await request(app)
+      .get(`/api/v1/accounts/${aliceId}`)
+      .set('Authorization', `Bearer ${userToken}`);
+    const bobAccount = await request(app)
+      .get(`/api/v1/accounts/${bobId}`)
+      .set('Authorization', `Bearer ${userToken}`);
     assert.strictEqual(aliceAccount.statusCode, 200);
     assert.strictEqual(bobAccount.statusCode, 200);
     assert.strictEqual(aliceAccount.body.balance, 650); // 1000 - 350
@@ -129,7 +148,9 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     // ----------------------------------------------------
     // STEP 9: List All Transfers History
     // ----------------------------------------------------
-    const transferListRes = await request(app).get('/api/v1/transfers?page=1&limit=10');
+    const transferListRes = await request(app)
+      .get('/api/v1/transfers?page=1&limit=10')
+      .set('Authorization', `Bearer ${userToken}`);
     assert.strictEqual(transferListRes.statusCode, 200);
     assert.strictEqual(Array.isArray(transferListRes.body), true);
     assert.strictEqual(transferListRes.body.some((t) => t.id === transferId), true);
@@ -139,6 +160,7 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     // ----------------------------------------------------
     const updateRes = await request(app)
       .patch(`/api/v1/accounts/${aliceId}`)
+      .set('Authorization', `Bearer ${userToken}`)
       .send({
         name: 'Alice C. Wonderland',
         email: 'alice.wonderland@example.com',
@@ -150,7 +172,9 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     // ----------------------------------------------------
     // STEP 11: Account Deletion (DELETE)
     // ----------------------------------------------------
-    const deleteRes = await request(app).delete(`/api/v1/accounts/${bobId}`);
+    const deleteRes = await request(app)
+      .delete(`/api/v1/accounts/${bobId}`)
+      .set('Authorization', `Bearer ${userToken}`);
     assert.strictEqual(deleteRes.statusCode, 200);
 
     // ----------------------------------------------------
@@ -158,6 +182,7 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     // ----------------------------------------------------
     const postDeletionTransfer = await request(app)
       .post('/api/v1/transfers')
+      .set('Authorization', `Bearer ${userToken}`)
       .send({
         fromAccountId: aliceId,
         toAccountId: bobId,
