@@ -4,6 +4,9 @@ export const transferSchema = z.object({
     fromAccountId: z.string().min(1, "From Account ID is required"),
     toAccountId: z.string().min(1, "To Account ID is required"),
     amount: z.number().min(0.10, "Amount must be a positive number"),
+}).refine((data) => data.fromAccountId !== data.toAccountId, {
+    message: "Cannot transfer to the same account",
+    path: ["toAccountId"],
 });
 
 export const transferParams = z.object({

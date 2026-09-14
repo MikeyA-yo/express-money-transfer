@@ -19,7 +19,6 @@ after(async () => {
 
 describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
   const adminToken = generateToken({ id: 'admin-e2e', email: 'admin@example.com', role: 'admin' });
-  const userToken = generateToken({ id: 'user-e2e', email: 'alice@example.com', role: 'user' });
 
   it('should execute the full user journey: onboarding, transfers, audits, balance updates, and edge cases', async () => {
     // ----------------------------------------------------
@@ -36,20 +35,23 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     assert.strictEqual(healthCheck.headers['x-content-type-options'], 'nosniff');
 
     // ----------------------------------------------------
-    // STEP 2: Client A (Alice) and Client B (Bob) Onboarding
+    // STEP 2: Client A (Alice) signs up (linked account) and Client B (Bob) onboarding
     // ----------------------------------------------------
     const createAliceRes = await request(app)
-      .post('/api/v1/accounts')
+      .post('/api/v1/auth/signup')
       .send({
         name: 'Alice Cooper',
         email: 'alice@example.com',
+        password: 'password123',
         balance: 1000
       });
     assert.strictEqual(createAliceRes.statusCode, 201);
-    assert.ok('id' in createAliceRes.body);
-    assert.strictEqual(createAliceRes.body.name, 'Alice Cooper');
-    assert.strictEqual(createAliceRes.body.balance, 1000);
-    const aliceId = createAliceRes.body.id;
+    assert.ok(createAliceRes.body.token);
+    assert.ok('id' in createAliceRes.body.account);
+    assert.strictEqual(createAliceRes.body.account.name, 'Alice Cooper');
+    assert.strictEqual(createAliceRes.body.account.balance, 1000);
+    const aliceId = createAliceRes.body.account.id;
+    const userToken = createAliceRes.body.token;
 
     const createBobRes = await request(app)
       .post('/api/v1/accounts')

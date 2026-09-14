@@ -1,10 +1,13 @@
 import mongoose from 'mongoose';
 import Transfer from '../models/transfer.js';
 import Account from '../models/accounts.js';
-// import { transferDTO } from '../validators/transfer.validator.dto.js';
+import User from '../models/user.js';
 import {
     NotFoundError,
-    InsufficientFundsError
+    InsufficientFundsError,
+    UnauthorizedError,
+    ForbiddenError,
+    BadRequestError
 } from '../common/domain-exceptions/domain-exceptions.js';
 import { toTransferResponse, toTransfersResponse } from '../response-schema/index.js';
 
@@ -14,17 +17,54 @@ function toDecimal128(value) {
 
 const models = {
     Transfer,
-    Account
+    Account,
+    User
 };
 
- function assertAccountBelongsToUser(account, userId) {
-    if (account.userId !== userId) {
-        throw new UnauthorizedError('Account does not belong to the authenticated user', { resource: 'Account', id: account.id });
-    }}
+/**
+ * Resolve the authenticated user's linked account from the user store.
+ * JWT claims are identity only; ownership is always loaded from persistence.
+ */
+async function resolveOwnedAccountId(actor, { User = models.User } = {}) {
+    if (!actor || !actor.id) {
+        throw UnauthorizedError('Authentication required');
+    }
 
+    const user = await User.findOne({ id: actor.id });
+    if (!user) {
+        throw UnauthorizedError('Authenticated user not found');
+    }
 
-export async function newTransfer(fromAccountId, toAccountId, amount, { Transfer = models.Transfer, Account = models.Account } = {}) {
-    assertAccountBelongsToUser(await Account.findOne({ id: fromAccountId }), req.user.id);
+    return user.accountId;
+}
+
+/**
+ * The debit account must be the account linked to the authenticated user.
+ * Checked before any account lookup so a non-owner cannot probe existence.
+ */
+function assertOwnsSourceAccount(ownedAccountId, fromAccountId) {
+    if (!ownedAccountId || ownedAccountId !== fromAccountId) {
+        throw ForbiddenError('Cannot initiate transfer from an account you do not own', {
+            resource: 'Account',
+            id: fromAccountId
+        });
+    }
+}
+
+export async function newTransfer(
+    fromAccountId,
+    toAccountId,
+    amount,
+    actor,
+    { Transfer = models.Transfer, Account = models.Account, User = models.User } = {}
+) {
+    const ownedAccountId = await resolveOwnedAccountId(actor, { User });
+    assertOwnsSourceAccount(ownedAccountId, fromAccountId);
+
+    if (fromAccountId === toAccountId) {
+        throw BadRequestError('Cannot transfer to the same account');
+    }
+
     const session = await mongoose.startSession();
 
     let transfer;
@@ -33,7 +73,7 @@ export async function newTransfer(fromAccountId, toAccountId, amount, { Transfer
             const accountFrom = await Account.findOne({ id: fromAccountId }).session(session);
             const accountTo = await Account.findOne({ id: toAccountId }).session(session);
 
-             if (!accountFrom || !accountTo) {
+            if (!accountFrom || !accountTo) {
                 const missingId = !accountFrom ? fromAccountId : toAccountId;
                 throw NotFoundError('Account not found', { resource: 'Account', id: missingId });
             }
@@ -53,7 +93,7 @@ export async function newTransfer(fromAccountId, toAccountId, amount, { Transfer
             await accountFrom.save({ session });
             await accountTo.save({ session });
 
-             transfer = new Transfer({
+            transfer = new Transfer({
                 id: new mongoose.Types.ObjectId().toString(),
                 fromAccountId,
                 toAccountId,
@@ -62,37 +102,28 @@ export async function newTransfer(fromAccountId, toAccountId, amount, { Transfer
 
             await transfer.save({ session });
         });
-         const output = {
+
+        const output = {
             ...transfer.toObject(),
             status: "COMPLETED",
         };
         return toTransferResponse(output);
-    } catch (error) {
-        throw error;
     } finally {
         await session.endSession();
     }
 }
 
 export async function listTransfers(page = 1, limit = 10, { Transfer = models.Transfer } = {}) {
-    try {
-        const transfers = await Transfer.find()
-                    .skip((page - 1) * limit)
-                    .limit(parseInt(limit));
-        return toTransfersResponse(transfers);
-    } catch (error) {
-        throw error;
-    }
+    const transfers = await Transfer.find()
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+    return toTransfersResponse(transfers);
 }
 
 export async function getTransferById(id, { Transfer = models.Transfer } = {}) {
-    try {
-        const transfer = await Transfer.findOne({ id });
-        if (!transfer) {
-            throw NotFoundError('Transfer not found', { resource: 'Transfer', id });
-        }
-        return toTransferResponse(transfer);
-    } catch (error) {
-        throw error;
+    const transfer = await Transfer.findOne({ id });
+    if (!transfer) {
+        throw NotFoundError('Transfer not found', { resource: 'Transfer', id });
     }
+    return toTransferResponse(transfer);
 }

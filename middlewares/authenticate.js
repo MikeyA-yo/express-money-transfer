@@ -13,7 +13,7 @@ export const authenticate = ({ verifyToken = authService.verifyToken } = {}) => 
   }
 
   const [scheme, token] = authHeader.split(' ');
-  if(scheme !== 'Bearer') {
+  if (scheme !== 'Bearer') {
     throw UnauthorizedError('Invalid authentication scheme');
   }
   if (!token) {
