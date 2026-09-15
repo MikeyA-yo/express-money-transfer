@@ -58,8 +58,8 @@ describe('Authentication & Admin E2E Tests', () => {
     assert.strictEqual(signupRes.body.account.id, signupRes.body.user.accountId);
     assert.strictEqual(signupRes.body.account.name, 'Sarah Connor');
     assert.strictEqual(signupRes.body.account.email, 'sarah@resistance.com');
-    assert.ok(typeof signupRes.body.account.balance === 'number');
-    assert.ok(signupRes.body.account.balance > 0);
+    assert.match(signupRes.body.account.balance, /^\d+\.\d{2} USD$/);
+    assert.match(signupRes.body.account.balanceMinor, /^\d+ USDMINOR$/);
 
     // Verify token can be used immediately with GET /api/v1/auth/me
     const meRes = await request(app)
@@ -186,7 +186,7 @@ describe('Authentication & Admin E2E Tests', () => {
       .send({
         name: 'Corporate Account',
         email: 'corp@example.com',
-        balance: 5000
+        balance: 500000
       });
 
     // Obtain admin token
@@ -207,6 +207,6 @@ describe('Authentication & Admin E2E Tests', () => {
     assert.ok(res.body.totalAccounts >= 1);
     assert.ok('totalTransfers' in res.body);
     assert.ok('totalSystemBalance' in res.body);
-    assert.ok(res.body.totalSystemBalance >= 5000);
+    assert.ok(res.body.totalSystemBalance >= 500000);
   });
 });

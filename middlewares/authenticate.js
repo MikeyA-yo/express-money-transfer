@@ -1,4 +1,4 @@
-import { UnauthorizedError } from '../common/domain-exceptions/domain-exceptions.js';
+import { ForbiddenError, UnauthorizedError } from '../common/domain-exceptions/domain-exceptions.js';
 import * as authService from '../services/auth.js';
 
 /**
@@ -31,6 +31,7 @@ export const authenticate = ({ verifyToken = authService.verifyToken } = {}) => 
 
 export const requireRole = (role) => (req, res, next) => {
   if (!req.user || req.user.role !== role) {
+    if (req.user && (req.user.role == "admin" || req.user.role == "superadmin")) throw ForbiddenError('Admin or Superadmin cannot perform this action');
     throw UnauthorizedError('Insufficient permissions');
   }
   next();
@@ -38,6 +39,7 @@ export const requireRole = (role) => (req, res, next) => {
 
 export const requireRoles = (roles) => (req, res, next) => {
   if (!req.user || !roles.includes(req.user.role)) {
+    if (req.user && (req.user.role == "admin" || req.user.role == "superadmin")) throw ForbiddenError('Admin or Superadmin cannot perform this action');
     throw UnauthorizedError('Insufficient permissions');
   }
   next();

@@ -10,10 +10,11 @@ import {
     BadRequestError
 } from '../common/domain-exceptions/domain-exceptions.js';
 import { toTransferResponse, toTransfersResponse } from '../response-schema/index.js';
+import { createMoney, sum, subtractMoney, toAmount } from '../common/money-value-object/index.js';
 
-function toDecimal128(value) {
-    return mongoose.Types.Decimal128.fromString(String(value));
-}
+// function toDecimal128(value) {
+//     return mongoose.Types.Decimal128.fromString(String(value));
+// }
 
 const models = {
     Transfer,
@@ -78,8 +79,8 @@ export async function newTransfer(
                 throw NotFoundError('Account not found', { resource: 'Account', id: missingId });
             }
 
-            const fromBalance = BigInt(accountFrom.balance.toString());
-            const transferAmount = BigInt(String(amount));
+            const fromBalance =accountFrom.balance;;
+            const transferAmount = BigInt(amount);
 
             if (fromBalance < transferAmount) {
                 throw InsufficientFundsError('Insufficient funds', {
@@ -87,9 +88,18 @@ export async function newTransfer(
                     transferAmount: transferAmount.toString()
                 });
             }
+            let fromMoney = createMoney(fromBalance);
+            let toMoney = createMoney(accountTo.balance);
+            let transferMoney = createMoney(transferAmount);
 
-            accountFrom.balance = toDecimal128((fromBalance - transferAmount).toString());
-            accountTo.balance = toDecimal128((BigInt(accountTo.balance.toString()) + transferAmount).toString());
+            let fromMoneyBalance = subtractMoney(fromMoney, transferMoney);
+            let toMoneyBalance = sum(toMoney, transferMoney);
+
+            accountFrom.balance = toAmount(fromMoneyBalance);
+            accountTo.balance = toAmount(toMoneyBalance);
+
+            // accountFrom.balance = (fromBalance - transferAmount);
+            // accountTo.balance = (accountTo.balance + transferAmount);
             await accountFrom.save({ session });
             await accountTo.save({ session });
 
@@ -97,7 +107,7 @@ export async function newTransfer(
                 id: new mongoose.Types.ObjectId().toString(),
                 fromAccountId,
                 toAccountId,
-                amount: toDecimal128(transferAmount.toString()),
+                amount: transferAmount,
             });
 
             await transfer.save({ session });

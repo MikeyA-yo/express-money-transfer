@@ -5,7 +5,7 @@ import baseSchema from './basePlugin.js';
 let accountSchema = new Schema({
     name: { type: String, required: true, get: v => v.trim() },
     email: { type: String, required: true },
-    balance: { type: Schema.Types.Decimal128, required: true, default: 10000.00 },
+    balance: { type: BigInt, required: true, default: 1000000 },
     currency: { type: String, required: true, default: 'USD' },
 });
 

@@ -5,7 +5,7 @@ import baseSchema from './basePlugin.js';
 let transferSchema = new Schema({
     fromAccountId: { type: String, required: true },
     toAccountId: { type: String, required: true },
-    amount: { type: Schema.Types.Decimal128, required: true },
+    amount: { type: BigInt, required: true },
 });
 
 transferSchema = baseSchema(transferSchema, {

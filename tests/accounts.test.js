@@ -18,17 +18,19 @@ after(async () => {
 });
 
 describe('Accounts API', () => {
-    it('POST / - should create a new account', async () => {
+    it('POST / - should create a new account and return major/minor money formats', async () => {
         const res = await request(app)
             .post('/api/v1/accounts')
             .send({
                 name: 'Test User',
                 email: 'test@example.com',
-                balance: 100
+                balance: 10000
             });
         assert.strictEqual(res.statusCode, 201);
         assert.ok('id' in res.body);
         assert.strictEqual(res.body.name, 'Test User');
+        assert.strictEqual(res.body.balance, '100.00 USD');
+        assert.strictEqual(res.body.balanceMinor, '10000 USDMINOR');
     });
     
     it('POST / - should return 409 if account already exists', async () => {
@@ -37,7 +39,7 @@ describe('Accounts API', () => {
             .send({
                 name: 'Test User',
                 email: 'duplicate@example.com',
-                balance: 100
+                balance: 10000
             });
             
         const res = await request(app)
@@ -45,7 +47,7 @@ describe('Accounts API', () => {
             .send({
                 name: 'Test User',
                 email: 'duplicate@example.com',
-                balance: 100
+                balance: 10000
             });
         assert.strictEqual(res.statusCode, 409);
     });
@@ -64,4 +66,3 @@ describe('Accounts API', () => {
         assert.strictEqual(res.statusCode, 401);
     });
 });
-

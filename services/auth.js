@@ -200,10 +200,10 @@ export async function signup({ name, email, password, initialBalance } = {}, {
     throw ConflictError('User with this email already exists', { email });
   }
 
-  // Generate random balance (e.g. between $100 and $2500) if not explicitly provided
+  // Generate random balance in minor units (e.g. between $100.00 and $2500.00) if not explicitly provided
   const balance = initialBalance !== undefined
     ? Number(initialBalance)
-    : Number((Math.floor(Math.random() * 240000 + 10000) / 100).toFixed(2));
+    : Math.floor(Math.random() * 240000 + 10000);
 
   // Automatically create a linked account (throws DuplicateAccountError if account email exists)
   const account = await createAccountFn(name, email, balance, { Account });

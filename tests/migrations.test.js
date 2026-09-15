@@ -32,54 +32,64 @@ after(async () => {
 });
 
 describe('MongoDB Migrations', () => {
-    it('should successfully run pending migrations (up), update documents, and be idempotent', async () => {
+    it('should successfully run pending migrations (up), convert decimal money to minor-unit longs, and be idempotent', async () => {
         const db = mongoose.connection.db;
         const client = mongoose.connection.client;
 
-        // 1. Seed unmigrated legacy documents directly using raw collection
         const accountsColl = db.collection('accounts');
-        const legacyDoc = {
+        const transfersColl = db.collection('transfers');
+        const legacyAccount = {
             id: 'legacy-1',
             name: 'Legacy User',
             email: 'legacy@example.com',
-            balance: 500,
+            balance: mongoose.Types.Decimal128.fromString('500.00'),
             deleted: false
         };
-        await accountsColl.insertOne(legacyDoc);
+        const legacyTransfer = {
+            id: 'legacy-tr-1',
+            fromAccountId: 'legacy-1',
+            toAccountId: 'legacy-2',
+            amount: mongoose.Types.Decimal128.fromString('25.50'),
+            deleted: false
+        };
+        await accountsColl.insertOne(legacyAccount);
+        await transfersColl.insertOne(legacyTransfer);
 
-        // 2. Check initial migration status
         const initialStatus = await migrateMongo.status(db);
-        assert.ok(initialStatus.length > 0);
-        assert.strictEqual(initialStatus[0].appliedAt, 'PENDING');
+        assert.ok(initialStatus.length >= 2);
+        assert.ok(initialStatus.every((entry) => entry.appliedAt === 'PENDING'));
 
-        // 3. Run migrations up
         const migrated = await migrateMongo.up(db, client);
-        assert.strictEqual(migrated.length, 1);
+        assert.strictEqual(migrated.length, 2);
 
-        // 4. Verify document was updated with new schema fields
-        const updatedDoc = await accountsColl.findOne({ id: 'legacy-1' });
-        assert.strictEqual(updatedDoc.currency, 'USD');
-        assert.strictEqual(updatedDoc.schemaVersion, 1);
+        const updatedAccount = await accountsColl.findOne({ id: 'legacy-1' });
+        assert.strictEqual(updatedAccount.currency, 'USD');
+        assert.strictEqual(updatedAccount.schemaVersion, 1);
+        assert.strictEqual(Number(updatedAccount.balance), 50000);
 
-        // 5. Verify changelog collection has recorded the migration
+        const updatedTransfer = await transfersColl.findOne({ id: 'legacy-tr-1' });
+        assert.strictEqual(Number(updatedTransfer.amount), 2550);
+
         const changelogColl = db.collection('changelog');
         const changelogEntry = await changelogColl.findOne({ fileName: migrated[0] });
         assert.ok(changelogEntry !== null && changelogEntry !== undefined);
         assert.ok(changelogEntry.appliedAt instanceof Date);
 
-        // 6. Test IDEMPOTENCY: running up again should do nothing
         const secondRunMigrated = await migrateMongo.up(db, client);
         assert.strictEqual(secondRunMigrated.length, 0);
 
-        // 7. Test ROLLBACK (down)
         const rolledBack = await migrateMongo.down(db, client);
         assert.strictEqual(rolledBack.length, 1);
+        assert.strictEqual(rolledBack[0], migrated[1]);
 
-        const docAfterRollback = await accountsColl.findOne({ id: 'legacy-1' });
-        assert.strictEqual(docAfterRollback.currency, undefined);
+        const accountAfterAmountRollback = await accountsColl.findOne({ id: 'legacy-1' });
+        assert.strictEqual(accountAfterAmountRollback.currency, 'USD');
+        assert.strictEqual(Number(accountAfterAmountRollback.balance.toString()), 500);
 
-        // Changelog entry should be removed
-        const changelogAfterRollback = await changelogColl.findOne({ fileName: migrated[0] });
-        assert.strictEqual(changelogAfterRollback, null);
+        const transferAfterAmountRollback = await transfersColl.findOne({ id: 'legacy-tr-1' });
+        assert.strictEqual(Number(transferAfterAmountRollback.amount.toString()), 25.5);
+
+        const amountMigrationChangelog = await changelogColl.findOne({ fileName: migrated[1] });
+        assert.strictEqual(amountMigrationChangelog, null);
     });
 });

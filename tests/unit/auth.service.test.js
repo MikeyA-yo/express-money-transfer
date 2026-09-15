@@ -75,7 +75,7 @@ describe('AuthService', () => {
     assert.strictEqual(result.user.email, 'charlie@test.com');
     assert.strictEqual(result.user.accountId, 'acc-new-777');
     assert.strictEqual(result.account.id, 'acc-new-777');
-    assert.ok(result.account.balance >= 100);
+    assert.ok(Number(result.account.balance) >= 10000);
     assert.strictEqual(mockCreateAccount.mock.callCount(), 1);
     assert.strictEqual(mockHash.mock.callCount(), 1);
     assert.strictEqual(mockUserModel.create.mock.callCount(), 1);

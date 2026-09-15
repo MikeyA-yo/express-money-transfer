@@ -3,8 +3,8 @@ import logger from '../config/logger.js';
 import * as transferService from '../services/transfer.js';
 
 export const createTransferHandler = ({ newTransfer = transferService.newTransfer } = {}) => async (req, res) => {
-    const { fromAccountId, toAccountId, amount } = req.body;
-    const transferRes = await newTransfer(fromAccountId, toAccountId, amount, req.user);
+    const { fromAccountId, toAccountId, amountMinor } = req.body;
+    const transferRes = await newTransfer(fromAccountId, toAccountId, amountMinor, req.user);
 
     logger.info("Transfer completed", {
         transferId: transferRes._id || transferRes.id,

@@ -36,19 +36,20 @@ describe('AccountController', () => {
   });
 
   it('createAccount - should invoke injected service and return 201 with created account', async () => {
-    mockReq.body = { name: 'Bob', email: 'bob@test.com', balance: 250 };
+    mockReq.body = { name: 'Bob', email: 'bob@test.com', balance: 25000 };
     const mockNewAccount = mock.fn(async () => ({
       id: 'acc-bob',
       name: 'Bob',
       email: 'bob@test.com',
-      balance: 250
+      balance: '250.00 USD',
+      balanceMinor: '25000 USDMINOR'
     }));
 
     const handler = createAccountHandler({ newAccount: mockNewAccount });
     await handler(mockReq, mockRes);
 
     assert.strictEqual(mockNewAccount.mock.callCount(), 1);
-    assert.deepStrictEqual(mockNewAccount.mock.calls[0].arguments, ['Bob', 'bob@test.com', 250]);
+    assert.deepStrictEqual(mockNewAccount.mock.calls[0].arguments, ['Bob', 'bob@test.com', 25000]);
     assert.strictEqual(mockRes.status.mock.callCount(), 1);
     assert.deepStrictEqual(mockRes.status.mock.calls[0].arguments, [201]);
     assert.strictEqual(mockRes.json.mock.callCount(), 1);
@@ -56,7 +57,8 @@ describe('AccountController', () => {
       id: 'acc-bob',
       name: 'Bob',
       email: 'bob@test.com',
-      balance: 250
+      balance: '250.00 USD',
+      balanceMinor: '25000 USDMINOR'
     }]);
   });
 
@@ -155,12 +157,14 @@ describe('TransferController', () => {
   });
 
   it('createTransfer - should invoke injected service with authenticated actor and return 201 with transfer result', async () => {
-    mockReq.body = { fromAccountId: 'acc-1', toAccountId: 'acc-2', amount: 50 };
+    mockReq.body = { fromAccountId: 'acc-1', toAccountId: 'acc-2', amountMinor: 5000 };
     const mockNewTransfer = mock.fn(async () => ({
       id: 'tr-1',
       from: 'acc-1',
       to: 'acc-2',
-      amount: 50,
+      amount: 5000,
+      amountMajor: '50.00 USD',
+      amountMinor: '5000 USDMINOR',
       status: 'COMPLETED'
     }));
 
@@ -168,7 +172,7 @@ describe('TransferController', () => {
     await handler(mockReq, mockRes);
 
     assert.strictEqual(mockNewTransfer.mock.callCount(), 1);
-    assert.deepStrictEqual(mockNewTransfer.mock.calls[0].arguments, ['acc-1', 'acc-2', 50, mockReq.user]);
+    assert.deepStrictEqual(mockNewTransfer.mock.calls[0].arguments, ['acc-1', 'acc-2', 5000, mockReq.user]);
     assert.strictEqual(mockRes.status.mock.callCount(), 1);
     assert.deepStrictEqual(mockRes.status.mock.calls[0].arguments, [201]);
     assert.strictEqual(mockRes.json.mock.callCount(), 1);

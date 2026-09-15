@@ -42,22 +42,22 @@ describe('Transfers API', () => {
             .send({
                 fromAccountId: 'acc1',
                 toAccountId: 'acc2',
-                amount: 100
+                amountMinor: 10000
             });
         assert.strictEqual(res.statusCode, 401);
     });
 
-    it('POST / - should return 401 if user has insufficient permissions (e.g. admin instead of user)', async () => {
+    it('POST / - should return 403 if user is admin (e.g. admin instead of user)', async () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 fromAccountId: 'acc1',
                 toAccountId: 'acc2',
-                amount: 100
+                amountMinor: 10000
             });
-        assert.strictEqual(res.statusCode, 401);
-        assert.strictEqual(res.body.error, 'Insufficient permissions');
+        assert.strictEqual(res.statusCode, 403);
+        assert.strictEqual(res.body.error, 'Admin or Superadmin cannot perform this action');
     });
 
     it('POST / - should return 401 if the token does not map to a persisted user', async () => {
@@ -74,7 +74,7 @@ describe('Transfers API', () => {
             .send({
                 fromAccountId: 'acc-ghost',
                 toAccountId: 'acc-other',
-                amount: 100
+                amountMinor: 10000
             });
 
         assert.strictEqual(res.statusCode, 401);
@@ -85,12 +85,12 @@ describe('Transfers API', () => {
         const alice = await signupUser({
             name: 'Alice',
             email: 'alice@example.com',
-            balance: 1000
+            balance: 100000
         });
         const bob = await signupUser({
             name: 'Bob',
             email: 'bob@example.com',
-            balance: 500
+            balance: 50000
         });
 
         const res = await request(app)
@@ -99,7 +99,7 @@ describe('Transfers API', () => {
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.account.id,
-                amount: 100
+                amountMinor: 10000
             });
 
         assert.strictEqual(res.statusCode, 403);
@@ -108,19 +108,20 @@ describe('Transfers API', () => {
         const aliceAccount = await request(app)
             .get(`/api/v1/accounts/${alice.account.id}`)
             .set('Authorization', `Bearer ${alice.token}`);
-        assert.strictEqual(aliceAccount.body.balance, 1000);
+        assert.strictEqual(aliceAccount.body.balance, '1000.00 USD');
+        assert.strictEqual(aliceAccount.body.balanceMinor, '100000 USDMINOR');
     });
 
     it('POST / - should return 403 even if the claimed source account does not exist', async () => {
         const alice = await signupUser({
             name: 'Alice',
             email: 'alice@example.com',
-            balance: 1000
+            balance: 100000
         });
         const destination = await createDestinationAccount({
             name: 'Bob',
             email: 'bob@example.com',
-            balance: 500
+            balance: 50000
         });
 
         const res = await request(app)
@@ -129,7 +130,7 @@ describe('Transfers API', () => {
             .send({
                 fromAccountId: 'not-alice-account',
                 toAccountId: destination.id,
-                amount: 100
+                amountMinor: 10000
             });
 
         assert.strictEqual(res.statusCode, 403);
@@ -140,7 +141,7 @@ describe('Transfers API', () => {
         const alice = await signupUser({
             name: 'Alice',
             email: 'alice@example.com',
-            balance: 1000
+            balance: 100000
         });
 
         const res = await request(app)
@@ -149,7 +150,7 @@ describe('Transfers API', () => {
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: alice.account.id,
-                amount: 100
+                amountMinor: 10000
             });
 
         assert.strictEqual(res.statusCode, 400);
@@ -159,7 +160,7 @@ describe('Transfers API', () => {
         const alice = await signupUser({
             name: 'Alice',
             email: 'alice@example.com',
-            balance: 1000
+            balance: 100000
         });
 
         const res = await request(app)
@@ -168,7 +169,7 @@ describe('Transfers API', () => {
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: 'nonexistent-destination',
-                amount: 100
+                amountMinor: 10000
             });
 
         assert.strictEqual(res.statusCode, 404);
@@ -178,13 +179,18 @@ describe('Transfers API', () => {
         const alice = await signupUser({
             name: 'Alice',
             email: 'alice@example.com',
-            balance: 1000
+            balance: 100000
         });
         const bob = await createDestinationAccount({
             name: 'Bob',
             email: 'bob@example.com',
-            balance: 500
+            balance: 50000
         });
+
+        assert.strictEqual(alice.account.balance, '1000.00 USD');
+        assert.strictEqual(alice.account.balanceMinor, '100000 USDMINOR');
+        assert.strictEqual(bob.balance, '500.00 USD');
+        assert.strictEqual(bob.balanceMinor, '50000 USDMINOR');
 
         const transferRes = await request(app)
             .post('/api/v1/transfers')
@@ -192,13 +198,14 @@ describe('Transfers API', () => {
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.id,
-                amount: 200
+                amountMinor: 20000
             });
 
         assert.strictEqual(transferRes.statusCode, 201);
         assert.strictEqual(transferRes.body.status, 'COMPLETED');
-        const transferAmount = transferRes.body.amount?.$numberDecimal ?? transferRes.body.amount;
-        assert.strictEqual(Number(transferAmount), 200);
+        assert.strictEqual(transferRes.body.amount, 20000);
+        assert.strictEqual(transferRes.body.amountMajor, '200.00 USD');
+        assert.strictEqual(transferRes.body.amountMinor, '20000 USDMINOR');
         assert.strictEqual(transferRes.body.from, alice.account.id);
         assert.strictEqual(transferRes.body.to, bob.id);
 
@@ -209,22 +216,22 @@ describe('Transfers API', () => {
             .get(`/api/v1/accounts/${bob.id}`)
             .set('Authorization', `Bearer ${alice.token}`);
 
-        const acc1Balance = verifyAcc1.body.balance?.$numberDecimal ?? verifyAcc1.body.balance;
-        const acc2Balance = verifyAcc2.body.balance?.$numberDecimal ?? verifyAcc2.body.balance;
-        assert.strictEqual(Number(acc1Balance), 800);
-        assert.strictEqual(Number(acc2Balance), 700);
+        assert.strictEqual(verifyAcc1.body.balance, '800.00 USD');
+        assert.strictEqual(verifyAcc1.body.balanceMinor, '80000 USDMINOR');
+        assert.strictEqual(verifyAcc2.body.balance, '700.00 USD');
+        assert.strictEqual(verifyAcc2.body.balanceMinor, '70000 USDMINOR');
     });
 
     it('POST / - should return 400 if insufficient funds', async () => {
         const alice = await signupUser({
             name: 'Alice',
             email: 'alice@example.com',
-            balance: 100
+            balance: 10000
         });
         const bob = await createDestinationAccount({
             name: 'Bob',
             email: 'bob@example.com',
-            balance: 500
+            balance: 50000
         });
 
         const transferRes = await request(app)
@@ -233,7 +240,7 @@ describe('Transfers API', () => {
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.id,
-                amount: 200
+                amountMinor: 20000
             });
 
         assert.strictEqual(transferRes.statusCode, 400);

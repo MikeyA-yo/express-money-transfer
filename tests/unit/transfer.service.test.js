@@ -60,7 +60,7 @@ describe('TransferService', () => {
 
   it('newTransfer - should throw UnauthorizedError if actor is missing', async () => {
     await assert.rejects(
-      newTransfer('acc-1', 'acc-2', 50, undefined, {
+      newTransfer('acc-1', 'acc-2', 5000, undefined, {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel
@@ -76,7 +76,7 @@ describe('TransferService', () => {
     mockUserModel.findOne = mock.fn(async () => null);
 
     await assert.rejects(
-      newTransfer('acc-1', 'acc-2', 50, actor, {
+      newTransfer('acc-1', 'acc-2', 5000, actor, {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel
@@ -91,7 +91,7 @@ describe('TransferService', () => {
 
   it('newTransfer - should throw ForbiddenError if fromAccountId is not the authenticated user account', async () => {
     await assert.rejects(
-      newTransfer('acc-someone-else', 'acc-2', 50, actor, {
+      newTransfer('acc-someone-else', 'acc-2', 5000, actor, {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel
@@ -108,7 +108,7 @@ describe('TransferService', () => {
     const spoofedActor = { ...actor, accountId: 'acc-spoofed' };
 
     await assert.rejects(
-      newTransfer('acc-spoofed', 'acc-2', 50, spoofedActor, {
+      newTransfer('acc-spoofed', 'acc-2', 5000, spoofedActor, {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel
@@ -121,7 +121,7 @@ describe('TransferService', () => {
 
   it('newTransfer - should throw BadRequestError if source and destination accounts are the same', async () => {
     await assert.rejects(
-      newTransfer('acc-1', 'acc-1', 50, actor, {
+      newTransfer('acc-1', 'acc-1', 5000, actor, {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel
@@ -134,7 +134,7 @@ describe('TransferService', () => {
 
   it('newTransfer - should throw NotFoundError if sender account does not exist', async () => {
     const mockQueryFrom = { session: mock.fn(async () => null) };
-    const mockQueryTo = { session: mock.fn(async () => ({ id: 'acc-2', balance: '100' })) };
+    const mockQueryTo = { session: mock.fn(async () => ({ id: 'acc-2', balance: 10000n })) };
 
     mockAccountModel.findOne = mock.fn((filter) => {
       if (filter?.id === 'acc-1') return mockQueryFrom;
@@ -142,7 +142,7 @@ describe('TransferService', () => {
     });
 
     await assert.rejects(
-      newTransfer('acc-1', 'acc-2', 50, actor, {
+      newTransfer('acc-1', 'acc-2', 5000, actor, {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel
@@ -156,12 +156,12 @@ describe('TransferService', () => {
   it('newTransfer - should throw InsufficientFundsError if sender balance is less than transfer amount', async () => {
     const accountFrom = {
       id: 'acc-1',
-      balance: '30',
+      balance: 3000n,
       save: mock.fn(async () => true)
     };
     const accountTo = {
       id: 'acc-2',
-      balance: '100',
+      balance: 10000n,
       save: mock.fn(async () => true)
     };
 
@@ -174,7 +174,7 @@ describe('TransferService', () => {
     });
 
     await assert.rejects(
-      newTransfer('acc-1', 'acc-2', 50, actor, {
+      newTransfer('acc-1', 'acc-2', 5000, actor, {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel
@@ -185,17 +185,17 @@ describe('TransferService', () => {
     assert.strictEqual(mockSession.endSession.mock.callCount(), 1);
   });
 
-  it('newTransfer - should complete transfer, update balances, and return formatted response with status COMPLETED', async () => {
+  it('newTransfer - should complete transfer, update balances as bigint, and return formatted money fields', async () => {
     const saveFromMock = mock.fn(async () => true);
     const saveToMock = mock.fn(async () => true);
     const accountFrom = {
       id: 'acc-1',
-      balance: '100',
+      balance: 10000n,
       save: saveFromMock
     };
     const accountTo = {
       id: 'acc-2',
-      balance: '50',
+      balance: 5000n,
       save: saveToMock
     };
 
@@ -207,7 +207,7 @@ describe('TransferService', () => {
       return mockQueryTo;
     });
 
-    const result = await newTransfer('acc-1', 'acc-2', 40, actor, {
+    const result = await newTransfer('acc-1', 'acc-2', 4000, actor, {
       Account: mockAccountModel,
       Transfer: mockTransferModel,
       User: mockUserModel
@@ -217,7 +217,11 @@ describe('TransferService', () => {
     assert.strictEqual(result.status, 'COMPLETED');
     assert.strictEqual(result.from, 'acc-1');
     assert.strictEqual(result.to, 'acc-2');
-    assert.strictEqual(result.amount, 40);
+    assert.strictEqual(result.amount, 4000);
+    assert.strictEqual(result.amountMajor, '40.00 USD');
+    assert.strictEqual(result.amountMinor, '4000 USDMINOR');
+    assert.strictEqual(accountFrom.balance, 6000n);
+    assert.strictEqual(accountTo.balance, 9000n);
     assert.strictEqual(saveFromMock.mock.callCount(), 1);
     assert.strictEqual(saveToMock.mock.callCount(), 1);
     assert.strictEqual(mockSession.endSession.mock.callCount(), 1);
@@ -229,7 +233,7 @@ describe('TransferService', () => {
       id: 'tr-1',
       fromAccountId: 'acc-1',
       toAccountId: 'acc-2',
-      amount: '100',
+      amount: 10000n,
       status: 'COMPLETED'
     }));
 
@@ -239,7 +243,9 @@ describe('TransferService', () => {
     assert.deepStrictEqual(mockTransferModel.findOne.mock.calls[0].arguments, [{ id: 'tr-1' }]);
     assert.strictEqual(result.id, 'tr-1');
     assert.strictEqual(result.status, 'COMPLETED');
-    assert.strictEqual(result.amount, 100);
+    assert.strictEqual(result.amount, 10000);
+    assert.strictEqual(result.amountMajor, '100.00 USD');
+    assert.strictEqual(result.amountMinor, '10000 USDMINOR');
   });
 
   it('getTransferById - should throw NotFoundError if transfer does not exist', async () => {
@@ -254,8 +260,8 @@ describe('TransferService', () => {
   it('listTransfers - should return paginated list of formatted transfers', async () => {
     const skipMock = mock.fn();
     const limitMock = mock.fn(async () => [
-      { id: 'tr-1', fromAccountId: 'a1', toAccountId: 'a2', amount: '50', status: 'COMPLETED' },
-      { id: 'tr-2', fromAccountId: 'a2', toAccountId: 'a3', amount: '75', status: 'COMPLETED' }
+      { id: 'tr-1', fromAccountId: 'a1', toAccountId: 'a2', amount: 5000n, status: 'COMPLETED' },
+      { id: 'tr-2', fromAccountId: 'a2', toAccountId: 'a3', amount: 7500n, status: 'COMPLETED' }
     ]);
     const mockQuery = {
       skip: mock.fn(function (s) {
@@ -271,7 +277,9 @@ describe('TransferService', () => {
     assert.strictEqual(skipMock.mock.calls[0].arguments[0], 0);
     assert.strictEqual(limitMock.mock.calls[0].arguments[0], 10);
     assert.strictEqual(result.length, 2);
-    assert.strictEqual(result[0].amount, 50);
+    assert.strictEqual(result[0].amount, 5000);
+    assert.strictEqual(result[0].amountMajor, '50.00 USD');
+    assert.strictEqual(result[0].amountMinor, '5000 USDMINOR');
     assert.strictEqual(result[0].status, 'COMPLETED');
   });
 });
