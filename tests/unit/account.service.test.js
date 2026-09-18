@@ -88,6 +88,7 @@ describe('AccountService', () => {
     const result = await fetchAccounts(1, 10, { Account: mockAccountModel });
 
     assert.strictEqual(mockAccountModel.find.mock.callCount(), 1);
+    assert.deepStrictEqual(mockAccountModel.find.mock.calls[0].arguments, [{ deleted: { $ne: true } }]);
     assert.strictEqual(skipMock.mock.calls[0].arguments[0], 0);
     assert.strictEqual(limitMock.mock.calls[0].arguments[0], 10);
     assert.strictEqual(result.length, 2);
@@ -162,25 +163,30 @@ describe('AccountService', () => {
     );
   });
 
-  it('removeAccount - should delete and return account response', async () => {
-    mockAccountModel.findOneAndDelete = mock.fn(async () => ({
+  it('removeAccount - should soft delete and return account response', async () => {
+    mockAccountModel.findOneAndUpdate = mock.fn(async () => ({
       id: 'acc-1',
       name: 'Alice',
       email: 'alice@example.com',
-      balance: 10000n
+      balance: 10000n,
+      deleted: true
     }));
 
     const result = await removeAccount('acc-1', { Account: mockAccountModel });
 
-    assert.strictEqual(mockAccountModel.findOneAndDelete.mock.callCount(), 1);
-    assert.deepStrictEqual(mockAccountModel.findOneAndDelete.mock.calls[0].arguments, [{ id: 'acc-1' }]);
+    assert.strictEqual(mockAccountModel.findOneAndUpdate.mock.callCount(), 1);
+    assert.deepStrictEqual(mockAccountModel.findOneAndUpdate.mock.calls[0].arguments, [
+      { id: 'acc-1' },
+      { $set: { deleted: true } },
+      { new: true }
+    ]);
     assert.strictEqual(result.id, 'acc-1');
     assert.strictEqual(result.balance, '100.00 USD');
     assert.strictEqual(result.balanceMinor, '10000 USDMINOR');
   });
 
-  it('removeAccount - should throw NotFoundError if account to delete is not found', async () => {
-    mockAccountModel.findOneAndDelete = mock.fn(async () => null);
+  it('removeAccount - should throw NotFoundError if account to soft delete is not found', async () => {
+    mockAccountModel.findOneAndUpdate = mock.fn(async () => null);
 
     await assert.rejects(
       removeAccount('non-existent', { Account: mockAccountModel }),

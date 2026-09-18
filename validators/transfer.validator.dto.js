@@ -6,11 +6,23 @@ export const transferSchema = z.object({
     fromAccountId: z.string().min(1, "From account ID is required"),
     toAccountId: z.string().min(1, "To account ID is required"),
     amount: z.number().positive("Amount must be a positive number"),
+    idempotencyKey: z.string().min(1, "Idempotency key must not be empty").optional(),
 })
 
 export const transferParams = z.object({
     id: z.string().min(1, "Transfer ID is required"),
 })
+
+export const transferHeaders = z.object({
+    'idempotency-key': z.string().min(1, "Idempotency-Key header is required").optional(),
+    'x-idempotency-key': z.string().min(1, "Idempotency-Key header is required").optional(),
+}).passthrough().refine(
+    (headers) => Boolean(headers['idempotency-key'] || headers['x-idempotency-key']),
+    {
+        message: "Idempotency-Key header is required",
+        path: ["idempotency-key"]
+    }
+);
 
 export function validateTransferParams(schema){
   return (req, res, next) => {

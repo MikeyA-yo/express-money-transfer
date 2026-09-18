@@ -4,6 +4,7 @@ import request from 'supertest';
 import app from '../../app.js';
 import { connectTestDB, clearTestDB, closeTestDB } from '../setup.js';
 import { generateToken } from '../../services/auth.js';
+import { closeRedisClient } from '../../util/idempotency.js';
 
 before(async () => {
   await connectTestDB();
@@ -15,6 +16,7 @@ afterEach(async () => {
 
 after(async () => {
   await closeTestDB();
+  await closeRedisClient();
 });
 
 describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
@@ -98,6 +100,7 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     const overdrawTransfer = await request(app)
       .post('/api/v1/transfers')
       .set('Authorization', `Bearer ${userToken}`)
+      .set('Idempotency-Key', 'idem-e2e-overdraw-1')
       .send({
         fromAccountId: aliceId,
         toAccountId: bobId,
@@ -112,6 +115,7 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     const transferRes = await request(app)
       .post('/api/v1/transfers')
       .set('Authorization', `Bearer ${userToken}`)
+      .set('Idempotency-Key', 'idem-e2e-valid-1')
       .send({
         fromAccountId: aliceId,
         toAccountId: bobId,
@@ -193,6 +197,7 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
     const postDeletionTransfer = await request(app)
       .post('/api/v1/transfers')
       .set('Authorization', `Bearer ${userToken}`)
+      .set('Idempotency-Key', 'idem-e2e-deleted-1')
       .send({
         fromAccountId: aliceId,
         toAccountId: bobId,

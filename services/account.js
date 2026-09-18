@@ -30,7 +30,7 @@ export async function createAccount(name, email, balance, options = {}) {
 export async function fetchAccounts(page = 1, limit = 10, { Account = models.Account, account = Account } = {}) {
   const accountModel = account || Account;
   try {
-    const accounts = await accountModel.find()
+    const accounts = await accountModel.find({ deleted: { $ne: true } })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
     return toAccountsResponse(accounts);
@@ -68,7 +68,8 @@ export async function editAccount(id, name, email, balance, { Account = models.A
 export async function removeAccount(id, { Account = models.Account, account = Account } = {}) {
   const accountModel = account || Account;
   try {
-    const deletedAccount = await accountModel.findOneAndDelete({ id });
+    // i decide to soft delete the account instead of hard delete, so that we can keep the history of the account and its transactions
+    const deletedAccount = await accountModel.findOneAndUpdate({ id }, { $set: { deleted: true } }, { new: true });
     if (!deletedAccount) {
       throw NotFoundError("Account not found", { resource: "Account", id });
     }

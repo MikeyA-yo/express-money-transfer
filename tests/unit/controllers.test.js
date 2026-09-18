@@ -18,6 +18,7 @@ import {
   getProfileHandler,
   issueTokenHandler
 } from '../../controllers/auth.js';
+import { BadRequestError } from '../../common/domain-exceptions/domain-exceptions.js';
 
 describe('AccountController', () => {
   let mockReq;
@@ -157,6 +158,7 @@ describe('TransferController', () => {
   });
 
   it('createTransfer - should invoke injected service with authenticated actor and return 201 with transfer result', async () => {
+    mockReq.headers = { 'idempotency-key': 'idem-key-1' };
     mockReq.body = { fromAccountId: 'acc-1', toAccountId: 'acc-2', amountMinor: 5000 };
     const mockNewTransfer = mock.fn(async () => ({
       id: 'tr-1',
@@ -172,11 +174,22 @@ describe('TransferController', () => {
     await handler(mockReq, mockRes);
 
     assert.strictEqual(mockNewTransfer.mock.callCount(), 1);
-    assert.deepStrictEqual(mockNewTransfer.mock.calls[0].arguments, ['acc-1', 'acc-2', 5000, mockReq.user]);
+    assert.deepStrictEqual(mockNewTransfer.mock.calls[0].arguments, ['acc-1', 'acc-2', 5000, mockReq.user, 'idem-key-1']);
     assert.strictEqual(mockRes.status.mock.callCount(), 1);
     assert.deepStrictEqual(mockRes.status.mock.calls[0].arguments, [201]);
     assert.strictEqual(mockRes.json.mock.callCount(), 1);
     assert.strictEqual(mockRes.json.mock.calls[0].arguments[0].status, 'COMPLETED');
+  });
+
+  it('createTransfer - should throw BadRequestError when Idempotency-Key header is missing', async () => {
+    mockReq.headers = {};
+    mockReq.body = { fromAccountId: 'acc-1', toAccountId: 'acc-2', amountMinor: 5000 };
+    const handler = createTransferHandler();
+
+    await assert.rejects(
+      () => handler(mockReq, mockRes),
+      BadRequestError
+    );
   });
 
   it('getTransfer - should invoke injected service with param id and return 200', async () => {

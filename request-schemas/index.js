@@ -3,12 +3,13 @@ import logger from "../config/logger.js";
 /**
  * Validates request data against a zod schema
  * @param {import("zod").ZodSchema} schema - Zod schema to validate with
- * @param {'body' | 'params' | 'query'} options - Request property to validate
+ * @param {'body' | 'params' | 'query' | 'headers'} options - Request property to validate
  */
-export const schemaMiddleware = (schema, options) => (req, res, next) => {
+export const schemaMiddleware = (schema, options = 'body') => (req, res, next) => {
     try {
-        const parsed = schema.parse(req[options]);
-        req.validatedData = parsed;
+        const dataToValidate = options === 'headers' ? req.headers : req[options];
+        const parsed = schema.parse(dataToValidate);
+        req.validatedData = { ...req.validatedData, ...parsed };
         next();
     } catch (error) {
         const validationErrors = error.errors || error.issues || [{ message: error.message }];

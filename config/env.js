@@ -6,5 +6,6 @@ export const globalConfig = (process) => {
     return parseEnv(process.env,{
         PORT: z.number().default(8000),
         MONGODB_URI: z.string().url(),
+        REDIS_URL: z.string().url(),
     });
 }

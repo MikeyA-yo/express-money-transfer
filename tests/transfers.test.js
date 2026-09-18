@@ -4,6 +4,7 @@ import request from 'supertest';
 import app from '../app.js';
 import { connectTestDB, clearTestDB, closeTestDB } from './setup.js';
 import { generateToken } from '../services/auth.js';
+import { closeRedisClient } from '../util/idempotency.js';
 
 before(async () => {
     await connectTestDB();
@@ -15,6 +16,7 @@ afterEach(async () => {
 
 after(async () => {
     await closeTestDB();
+    await closeRedisClient();
 });
 
 describe('Transfers API', () => {
@@ -60,6 +62,29 @@ describe('Transfers API', () => {
         assert.strictEqual(res.body.error, 'Admin or Superadmin cannot perform this action');
     });
 
+    it('POST / - should return 400 if Idempotency-Key header is missing', async () => {
+        const alice = await signupUser({
+            name: 'Alice',
+            email: 'alice@example.com',
+            balance: 100000
+        });
+
+        const res = await request(app)
+            .post('/api/v1/transfers')
+            .set('Authorization', `Bearer ${alice.token}`)
+            .send({
+                fromAccountId: alice.account.id,
+                toAccountId: 'acc2',
+                amountMinor: 10000
+            });
+
+        assert.strictEqual(res.statusCode, 400);
+        assert.ok(
+            res.body.error === 'Missing Idempotency-Key header' ||
+            (Array.isArray(res.body.error) && res.body.error.some(e => e.message?.includes('Idempotency-Key')))
+        );
+    });
+
     it('POST / - should return 401 if the token does not map to a persisted user', async () => {
         const orphanToken = generateToken({
             id: 'missing-user',
@@ -71,6 +96,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${orphanToken}`)
+            .set('Idempotency-Key', 'idem-orphan-1')
             .send({
                 fromAccountId: 'acc-ghost',
                 toAccountId: 'acc-other',
@@ -96,6 +122,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${bob.token}`)
+            .set('Idempotency-Key', 'idem-bob-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.account.id,
@@ -127,6 +154,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'idem-claimed-1')
             .send({
                 fromAccountId: 'not-alice-account',
                 toAccountId: destination.id,
@@ -147,6 +175,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'idem-same-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: alice.account.id,
@@ -166,6 +195,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'idem-dest-not-found-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: 'nonexistent-destination',
@@ -195,6 +225,7 @@ describe('Transfers API', () => {
         const transferRes = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'idem-success-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.id,
@@ -237,6 +268,7 @@ describe('Transfers API', () => {
         const transferRes = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'idem-insufficient-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.id,
@@ -245,5 +277,83 @@ describe('Transfers API', () => {
 
         assert.strictEqual(transferRes.statusCode, 400);
         assert.strictEqual(transferRes.body.error, 'Insufficient funds');
+    });
+
+    it('POST / - should replay cached response when same Idempotency-Key is reused', async () => {
+        const alice = await signupUser({
+            name: 'Alice',
+            email: 'alice@example.com',
+            balance: 100000
+        });
+        const bob = await createDestinationAccount({
+            name: 'Bob',
+            email: 'bob@example.com',
+            balance: 50000
+        });
+
+        const body = {
+            fromAccountId: alice.account.id,
+            toAccountId: bob.id,
+            amountMinor: 10000
+        };
+
+        const res1 = await request(app)
+            .post('/api/v1/transfers')
+            .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'idem-replay-key-1')
+            .send(body);
+
+        assert.strictEqual(res1.statusCode, 201);
+
+        const res2 = await request(app)
+            .post('/api/v1/transfers')
+            .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'idem-replay-key-1')
+            .send(body);
+
+        assert.strictEqual(res2.statusCode, 201);
+        assert.strictEqual(res2.body.id, res1.body.id);
+
+        // Verify balance was only deducted once ($100.00 transfer from $1000.00 = $900.00)
+        const checkBalance = await request(app)
+            .get(`/api/v1/accounts/${alice.account.id}`)
+            .set('Authorization', `Bearer ${alice.token}`);
+        assert.strictEqual(checkBalance.body.balance, '900.00 USD');
+    });
+
+    it('POST / - should return 422 if Idempotency-Key is reused with different request body', async () => {
+        const alice = await signupUser({
+            name: 'Alice',
+            email: 'alice@example.com',
+            balance: 100000
+        });
+        const bob = await createDestinationAccount({
+            name: 'Bob',
+            email: 'bob@example.com',
+            balance: 50000
+        });
+
+        await request(app)
+            .post('/api/v1/transfers')
+            .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'idem-mismatch-key-1')
+            .send({
+                fromAccountId: alice.account.id,
+                toAccountId: bob.id,
+                amountMinor: 10000
+            });
+
+        const res2 = await request(app)
+            .post('/api/v1/transfers')
+            .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'idem-mismatch-key-1')
+            .send({
+                fromAccountId: alice.account.id,
+                toAccountId: bob.id,
+                amountMinor: 20000
+            });
+
+        assert.strictEqual(res2.statusCode, 422);
+        assert.strictEqual(res2.body.error, 'Idempotency key reused with different request body');
     });
 });

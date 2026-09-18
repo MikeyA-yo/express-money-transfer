@@ -19,6 +19,7 @@ describe('TransferService', () => {
   let mockTransferModel;
   let mockUserModel;
   let mockSession;
+  let mockIdempotent;
   const actor = { id: 'usr-1', email: 'alice@test.com', role: 'user', accountId: 'acc-1' };
 
   beforeEach(() => {
@@ -52,18 +53,33 @@ describe('TransferService', () => {
     });
     mockTransferModel.findOne = mock.fn();
     mockTransferModel.find = mock.fn();
+
+    mockIdempotent = mock.fn(async (key, userId, body, fn) => await fn());
   });
 
   afterEach(() => {
     mock.reset();
   });
 
-  it('newTransfer - should throw UnauthorizedError if actor is missing', async () => {
+  it('newTransfer - should throw BadRequestError if idempotencyKey is missing', async () => {
     await assert.rejects(
-      newTransfer('acc-1', 'acc-2', 5000, undefined, {
+      newTransfer('acc-1', 'acc-2', 5000, actor, '', {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
-        User: mockUserModel
+        User: mockUserModel,
+        idempotent: mockIdempotent
+      }),
+      BadRequestError
+    );
+  });
+
+  it('newTransfer - should throw UnauthorizedError if actor is missing', async () => {
+    await assert.rejects(
+      newTransfer('acc-1', 'acc-2', 5000, undefined, 'idem-test-key', {
+        Account: mockAccountModel,
+        Transfer: mockTransferModel,
+        User: mockUserModel,
+        idempotent: mockIdempotent
       }),
       UnauthorizedError
     );
@@ -76,10 +92,11 @@ describe('TransferService', () => {
     mockUserModel.findOne = mock.fn(async () => null);
 
     await assert.rejects(
-      newTransfer('acc-1', 'acc-2', 5000, actor, {
+      newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-test-key', {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
-        User: mockUserModel
+        User: mockUserModel,
+        idempotent: mockIdempotent
       }),
       UnauthorizedError
     );
@@ -91,10 +108,11 @@ describe('TransferService', () => {
 
   it('newTransfer - should throw ForbiddenError if fromAccountId is not the authenticated user account', async () => {
     await assert.rejects(
-      newTransfer('acc-someone-else', 'acc-2', 5000, actor, {
+      newTransfer('acc-someone-else', 'acc-2', 5000, actor, 'idem-test-key', {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
-        User: mockUserModel
+        User: mockUserModel,
+        idempotent: mockIdempotent
       }),
       ForbiddenError
     );
@@ -108,10 +126,11 @@ describe('TransferService', () => {
     const spoofedActor = { ...actor, accountId: 'acc-spoofed' };
 
     await assert.rejects(
-      newTransfer('acc-spoofed', 'acc-2', 5000, spoofedActor, {
+      newTransfer('acc-spoofed', 'acc-2', 5000, spoofedActor, 'idem-test-key', {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
-        User: mockUserModel
+        User: mockUserModel,
+        idempotent: mockIdempotent
       }),
       ForbiddenError
     );
@@ -121,10 +140,11 @@ describe('TransferService', () => {
 
   it('newTransfer - should throw BadRequestError if source and destination accounts are the same', async () => {
     await assert.rejects(
-      newTransfer('acc-1', 'acc-1', 5000, actor, {
+      newTransfer('acc-1', 'acc-1', 5000, actor, 'idem-test-key', {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
-        User: mockUserModel
+        User: mockUserModel,
+        idempotent: mockIdempotent
       }),
       BadRequestError
     );
@@ -142,10 +162,11 @@ describe('TransferService', () => {
     });
 
     await assert.rejects(
-      newTransfer('acc-1', 'acc-2', 5000, actor, {
+      newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-test-key', {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
-        User: mockUserModel
+        User: mockUserModel,
+        idempotent: mockIdempotent
       }),
       NotFoundError
     );
@@ -174,10 +195,11 @@ describe('TransferService', () => {
     });
 
     await assert.rejects(
-      newTransfer('acc-1', 'acc-2', 5000, actor, {
+      newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-test-key', {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
-        User: mockUserModel
+        User: mockUserModel,
+        idempotent: mockIdempotent
       }),
       InsufficientFundsError
     );
@@ -207,10 +229,11 @@ describe('TransferService', () => {
       return mockQueryTo;
     });
 
-    const result = await newTransfer('acc-1', 'acc-2', 4000, actor, {
+    const result = await newTransfer('acc-1', 'acc-2', 4000, actor, 'idem-test-key', {
       Account: mockAccountModel,
       Transfer: mockTransferModel,
-      User: mockUserModel
+      User: mockUserModel,
+      idempotent: mockIdempotent
     });
 
     assert.ok(result.id);
@@ -226,6 +249,35 @@ describe('TransferService', () => {
     assert.strictEqual(saveToMock.mock.callCount(), 1);
     assert.strictEqual(mockSession.endSession.mock.callCount(), 1);
     assert.deepStrictEqual(mockUserModel.findOne.mock.calls[0].arguments, [{ id: actor.id }]);
+  });
+
+  it('newTransfer - should wrap transfer execution with idempotent runner when idempotencyKey is provided', async () => {
+    const senderAccount = { id: 'acc-1', balance: 10000n, save: mock.fn(async () => undefined) };
+    const receiverAccount = { id: 'acc-2', balance: 2000n, save: mock.fn(async () => undefined) };
+
+    mockAccountModel.findOne = mock.fn((query) => {
+      if (query.id === 'acc-1') return { session: () => senderAccount };
+      if (query.id === 'acc-2') return { session: () => receiverAccount };
+      return { session: () => null };
+    });
+
+    const customIdempotent = mock.fn(async (key, userId, body, fn) => {
+      assert.strictEqual(key, 'idem-key-custom');
+      assert.strictEqual(userId, actor.id);
+      assert.deepStrictEqual(body, { fromAccountId: 'acc-1', toAccountId: 'acc-2', amount: '5000' });
+      return await fn();
+    });
+
+    const result = await newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-key-custom', {
+      Transfer: mockTransferModel,
+      Account: mockAccountModel,
+      User: mockUserModel,
+      idempotent: customIdempotent
+    });
+
+    assert.strictEqual(customIdempotent.mock.callCount(), 1);
+    assert.strictEqual(result.status, 'COMPLETED');
+    assert.strictEqual(result.amount, 5000);
   });
 
   it('getTransferById - should return formatted transfer if found', async () => {

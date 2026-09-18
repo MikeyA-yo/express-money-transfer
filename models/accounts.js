@@ -9,6 +9,12 @@ let accountSchema = new Schema({
     currency: { type: String, required: true, default: 'USD' },
 });
 
+accountSchema.pre('validate', function () {
+    if (this.balance != null && BigInt(this.balance) < 0n) {
+        throw new Error('Account balance cannot be negative');
+    }
+});
+
 // accountSchema.plugin(basePlugin);
 
 accountSchema = baseSchema(accountSchema, {

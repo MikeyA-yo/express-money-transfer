@@ -11,6 +11,7 @@ import {
 } from '../common/domain-exceptions/domain-exceptions.js';
 import { toTransferResponse, toTransfersResponse } from '../response-schema/index.js';
 import { createMoney, sum, subtractMoney, toAmount } from '../common/money-value-object/index.js';
+import { idempotency } from '../util/idempotency.js';
 
 // function toDecimal128(value) {
 //     return mongoose.Types.Decimal128.fromString(String(value));
@@ -57,8 +58,13 @@ export async function newTransfer(
     toAccountId,
     amount,
     actor,
-    { Transfer = models.Transfer, Account = models.Account, User = models.User } = {}
+    idempotencyKey,
+    { Transfer = models.Transfer, Account = models.Account, User = models.User, idempotent = idempotency, redis = null } = {}
 ) {
+    if (!idempotencyKey) {
+        throw BadRequestError('Missing Idempotency-Key');
+    }
+
     const ownedAccountId = await resolveOwnedAccountId(actor, { User });
     assertOwnsSourceAccount(ownedAccountId, fromAccountId);
 
@@ -66,61 +72,69 @@ export async function newTransfer(
         throw BadRequestError('Cannot transfer to the same account');
     }
 
-    const session = await mongoose.startSession();
+    const executeTransfer = async () => {
+        const session = await mongoose.startSession();
 
-    let transfer;
-    try {
-        await session.withTransaction(async () => {
-            const accountFrom = await Account.findOne({ id: fromAccountId }).session(session);
-            const accountTo = await Account.findOne({ id: toAccountId }).session(session);
+        let transfer;
+        try {
+            await session.withTransaction(async () => {
+                const accountFrom = await Account.findOne({ id: fromAccountId, deleted: { $ne: true } }).session(session);
+                const accountTo = await Account.findOne({ id: toAccountId, deleted: { $ne: true } }).session(session);
 
-            if (!accountFrom || !accountTo) {
-                const missingId = !accountFrom ? fromAccountId : toAccountId;
-                throw NotFoundError('Account not found', { resource: 'Account', id: missingId });
-            }
+                if (!accountFrom || !accountTo) {
+                    const missingId = !accountFrom ? fromAccountId : toAccountId;
+                    throw NotFoundError('Account not found', { resource: 'Account', id: missingId });
+                }
 
-            const fromBalance =accountFrom.balance;;
-            const transferAmount = BigInt(amount);
+                const fromBalance = accountFrom.balance;
+                const transferAmount = BigInt(amount);
 
-            if (fromBalance < transferAmount) {
-                throw InsufficientFundsError('Insufficient funds', {
-                    fromBalance: fromBalance.toString(),
-                    transferAmount: transferAmount.toString()
+                if (fromBalance < transferAmount) {
+                    throw InsufficientFundsError('Insufficient funds', {
+                        fromBalance: fromBalance.toString(),
+                        transferAmount: transferAmount.toString()
+                    });
+                }
+                let fromMoney = createMoney(fromBalance);
+                let toMoney = createMoney(accountTo.balance);
+                let transferMoney = createMoney(transferAmount);
+
+                let fromMoneyBalance = subtractMoney(fromMoney, transferMoney);
+                let toMoneyBalance = sum(toMoney, transferMoney);
+
+                accountFrom.balance = toAmount(fromMoneyBalance);
+                accountTo.balance = toAmount(toMoneyBalance);
+
+                await accountFrom.save({ session });
+                await accountTo.save({ session });
+
+                transfer = new Transfer({
+                    id: new mongoose.Types.ObjectId().toString(),
+                    fromAccountId,
+                    toAccountId,
+                    amount: transferAmount,
                 });
-            }
-            let fromMoney = createMoney(fromBalance);
-            let toMoney = createMoney(accountTo.balance);
-            let transferMoney = createMoney(transferAmount);
 
-            let fromMoneyBalance = subtractMoney(fromMoney, transferMoney);
-            let toMoneyBalance = sum(toMoney, transferMoney);
-
-            accountFrom.balance = toAmount(fromMoneyBalance);
-            accountTo.balance = toAmount(toMoneyBalance);
-
-            // accountFrom.balance = (fromBalance - transferAmount);
-            // accountTo.balance = (accountTo.balance + transferAmount);
-            await accountFrom.save({ session });
-            await accountTo.save({ session });
-
-            transfer = new Transfer({
-                id: new mongoose.Types.ObjectId().toString(),
-                fromAccountId,
-                toAccountId,
-                amount: transferAmount,
+                await transfer.save({ session });
             });
 
-            await transfer.save({ session });
-        });
+            const output = {
+                ...transfer.toObject(),
+                status: "COMPLETED",
+            };
+            return toTransferResponse(output);
+        } finally {
+            await session.endSession();
+        }
+    };
 
-        const output = {
-            ...transfer.toObject(),
-            status: "COMPLETED",
-        };
-        return toTransferResponse(output);
-    } finally {
-        await session.endSession();
-    }
+    return await idempotent(
+        idempotencyKey,
+        actor?.id,
+        { fromAccountId, toAccountId, amount: amount?.toString?.() ?? amount },
+        executeTransfer,
+        { redis }
+    );
 }
 
 export async function listTransfers(page = 1, limit = 10, { Transfer = models.Transfer } = {}) {
