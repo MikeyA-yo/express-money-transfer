@@ -33,6 +33,7 @@ import {
   get,
   del,
 } from "../util/idempotency.js";
+import {redisClient} from "../app.js";
 
 const models = {
   Transfer,
@@ -88,7 +89,7 @@ export async function newTransfer(
     Transfer = models.Transfer,
     Account = models.Account,
     User = models.User,
-    redis,
+    redis = redisClient,
   } = {},
 ) {
   if (!idempotencyKey) {

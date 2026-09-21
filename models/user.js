@@ -7,6 +7,7 @@ let userSchema = new Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    customerCode: { type: String, unique: true, sparse: true, trim: true },
 });
 
 userSchema.virtual('account', {

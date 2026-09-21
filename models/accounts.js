@@ -8,6 +8,15 @@ let accountSchema = new Schema({
     balance: { type: BigInt, required: true, default: 1000000n },
     currency: { type: String, required: true, default: 'USD' },
     userId: { type: String, required: true, unique: true, sparse: true, ref: 'User' },
+    accountNumber: { type: String, unique: true, sparse: true, trim: true },
+    virtualAccount: {
+        bankName: { type: String },
+        bankCode: { type: String },
+        accountNumber: { type: String },
+        accountName: { type: String },
+        assignmentId: { type: String },
+        assigned: { type: Boolean, default: false }
+    },
 });
 
 accountSchema.virtual('user', {
