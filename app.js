@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import mongoSanitize from 'express-mongo-sanitize';
 import router from './routes/index.js';
 import logger from './config/logger.js';
+import { getRedisClient } from './util/idempotency.js';
 
 const app = express();
 
@@ -11,6 +12,14 @@ app.use(express.json());
 
 // Security Middlewares
 app.use(helmet());
+
+export const redisClient = getRedisClient().then((client) => {
+  logger.info("Connected to Redis");
+  return client;
+}).catch((err) => {
+  logger.error("Failed to connect to Redis:", err);
+  process.exit(1);
+});
 
 // express-mongo-sanitize middleware attempts to reassign req.query, which throws an error in Express 5.
 // As a workaround, we call the sanitize function directly to mutate the objects in place.

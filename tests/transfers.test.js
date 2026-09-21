@@ -30,10 +30,15 @@ describe('Transfers API', () => {
         return res.body;
     }
 
-    async function createDestinationAccount({ name, email, balance }) {
+    async function createDestinationAccount({ name, email, balance, userId }) {
         const res = await request(app)
             .post('/api/v1/accounts')
-            .send({ name, email, balance });
+            .send({
+                name,
+                email,
+                balance,
+                userId: userId || ('usr-' + Date.now() + Math.random().toString(36).slice(2, 8))
+            });
         assert.strictEqual(res.statusCode, 201);
         return res.body;
     }

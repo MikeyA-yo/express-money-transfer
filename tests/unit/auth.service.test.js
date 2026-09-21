@@ -45,19 +45,20 @@ describe('AuthService', () => {
     );
   });
 
-  it('signup - should create account with random balance, hash password, and link accountId to user', async () => {
+  it('signup - should create user, hash password, create account with userId, and return token', async () => {
     const mockUserModel = {
       findOne: mock.fn(async () => null),
       create: mock.fn(async (userData) => ({
         ...userData,
-        id: userData.id
+        id: userData.id || 'usr-created-1'
       }))
     };
-    const mockCreateAccount = mock.fn(async (name, email, balance) => ({
+    const mockCreateAccount = mock.fn(async (name, email, balance, userId, options) => ({
       id: 'acc-new-777',
       name,
       email,
-      balance
+      balance,
+      userId
     }));
     const mockHash = mock.fn(async () => '$2b$10$mockedbcrypt');
 
@@ -79,8 +80,11 @@ describe('AuthService', () => {
     assert.strictEqual(mockCreateAccount.mock.callCount(), 1);
     assert.strictEqual(mockHash.mock.callCount(), 1);
     assert.strictEqual(mockUserModel.create.mock.callCount(), 1);
-    assert.strictEqual(mockUserModel.create.mock.calls[0].arguments[0].accountId, 'acc-new-777');
+    // User is created without accountId field
+    assert.strictEqual(mockUserModel.create.mock.calls[0].arguments[0].accountId, undefined);
     assert.strictEqual(mockUserModel.create.mock.calls[0].arguments[0].password, '$2b$10$mockedbcrypt');
+    // Account was created with userId matching created user
+    assert.strictEqual(mockCreateAccount.mock.calls[0].arguments[3], result.user.id);
   });
 
   it('login - should throw BadRequestError if email or password missing', async () => {
@@ -131,23 +135,30 @@ describe('AuthService', () => {
     );
   });
 
-  it('login - should authenticate user and return accountId in payload', async () => {
+  it('login - should authenticate user and resolve linked account via Account.userId', async () => {
     const mockUser = {
       id: 'usr-1',
       name: 'Alice',
       email: 'alice@example.com',
       role: 'user',
-      accountId: 'acc-1',
       password: '$2b$10$hashedpassword'
+    };
+    const mockAccount = {
+      id: 'acc-1',
+      userId: 'usr-1',
+      balance: 1000n
     };
     const mockUserModel = {
       findOne: mock.fn(async () => mockUser)
+    };
+    const mockAccountModel = {
+      findOne: mock.fn(async () => mockAccount)
     };
     const mockCompare = mock.fn(async () => true);
 
     const result = await login(
       { email: 'alice@example.com', password: 'secret', role: 'user' },
-      { User: mockUserModel, comparePassword: mockCompare }
+      { User: mockUserModel, Account: mockAccountModel, comparePassword: mockCompare }
     );
 
     assert.ok(result.token);
@@ -169,13 +180,15 @@ describe('AuthService', () => {
     assert.strictEqual(profile.role, 'admin');
   });
 
-  it('getCurrentProfile - should return user profile for user claim', async () => {
-    const mockUser = { id: 'usr-1', name: 'Bob', email: 'bob@b.com', role: 'user', accountId: 'acc-2' };
+  it('getCurrentProfile - should return user profile and resolve accountId via Account.userId', async () => {
+    const mockUser = { id: 'usr-1', name: 'Bob', email: 'bob@b.com', role: 'user' };
+    const mockAccount = { id: 'acc-2', userId: 'usr-1' };
     const mockUserModel = { findOne: mock.fn(async () => mockUser) };
+    const mockAccountModel = { findOne: mock.fn(async () => mockAccount) };
 
     const profile = await getCurrentProfile(
       { id: 'usr-1', email: 'bob@b.com', role: 'user' },
-      { User: mockUserModel }
+      { User: mockUserModel, Account: mockAccountModel }
     );
 
     assert.strictEqual(profile.name, 'Bob');

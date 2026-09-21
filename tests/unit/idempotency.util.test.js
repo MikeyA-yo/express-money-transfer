@@ -1,12 +1,15 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { idempotency, fingerprint } from '../../util/idempotency.js';
 import {
-    BadRequestError,
-    UnauthorizedError,
-    ConflictError,
-    UnprocessableEntityError
-} from '../../common/domain-exceptions/domain-exceptions.js';
+    fingerprint,
+    createRedisKey,
+    createRedisLockKey,
+    acquireLock,
+    releaseLock,
+    set,
+    get,
+    del
+} from '../../util/idempotency.js';
 
 function createMockRedis() {
     const store = new Map();
@@ -30,211 +33,142 @@ function createMockRedis() {
     };
 }
 
-describe('Idempotency Utility (Redis)', () => {
-    it('should throw BadRequestError when key is missing', async () => {
-        await assert.rejects(
-            () => idempotency('', 'user-1', {}, async () => {}),
-            (err) => {
-                assert.ok(err instanceof BadRequestError);
-                assert.strictEqual(err.message, 'Missing Idempotency-Key');
-                return true;
-            }
-        );
+describe('Idempotency Utility Primitives (Redis)', () => {
+    describe('fingerprint', () => {
+        it('should generate consistent sha256 hash for identical bodies', () => {
+            const hash1 = fingerprint({ amount: 100, to: 'acc-2' });
+            const hash2 = fingerprint({ amount: 100, to: 'acc-2' });
+            assert.strictEqual(hash1, hash2);
+            assert.strictEqual(hash1.length, 64);
+        });
+
+        it('should generate different hash for different bodies', () => {
+            const hash1 = fingerprint({ amount: 100 });
+            const hash2 = fingerprint({ amount: 200 });
+            assert.notStrictEqual(hash1, hash2);
+        });
+
+        it('should handle empty or null bodies', () => {
+            const hashEmpty = fingerprint({});
+            const hashNull = fingerprint(null);
+            assert.strictEqual(hashEmpty, hashNull);
+        });
     });
 
-    it('should throw UnauthorizedError when userId is missing', async () => {
-        await assert.rejects(
-            () => idempotency('key-1', '', {}, async () => {}),
-            (err) => {
-                assert.ok(err instanceof UnauthorizedError);
-                assert.strictEqual(err.message, 'Authentication required');
-                return true;
-            }
-        );
+    describe('Key Formatting', () => {
+        it('createRedisKey - should format key as idempotency:type:userId:key', () => {
+            const key = createRedisKey('transfer', 'user-123', 'idem-456');
+            assert.strictEqual(key, 'idempotency:transfer:user-123:idem-456');
+        });
+
+        it('createRedisLockKey - should format key with lock: prefix', () => {
+            const lockKey = createRedisLockKey('transfer', 'user-123', 'idem-456');
+            assert.strictEqual(lockKey, 'lock:idempotency:transfer:user-123:idem-456');
+        });
     });
 
-    it('should throw BadRequestError when function is missing', async () => {
-        await assert.rejects(
-            () => idempotency('key-1', 'user-1', {}),
-            (err) => {
-                assert.ok(err instanceof BadRequestError);
-                assert.strictEqual(err.message, 'Function to execute is required');
-                return true;
-            }
-        );
+    describe('acquireLock & releaseLock', () => {
+        it('acquireLock - should acquire lock when key does not exist', async () => {
+            const mockRedis = createMockRedis();
+            const lockKey = createRedisLockKey('transfer', 'user-1', 'key-1');
+
+            const acquired = await acquireLock(mockRedis, lockKey, 30);
+            assert.strictEqual(acquired, true);
+            assert.strictEqual(mockRedis.store.get(lockKey), '1');
+        });
+
+        it('acquireLock - should fail to acquire lock when key is already held', async () => {
+            const mockRedis = createMockRedis();
+            const lockKey = createRedisLockKey('transfer', 'user-1', 'key-1');
+
+            const first = await acquireLock(mockRedis, lockKey, 30);
+            assert.strictEqual(first, true);
+
+            const second = await acquireLock(mockRedis, lockKey, 30);
+            assert.strictEqual(second, false);
+        });
+
+        it('acquireLock - should return true when client is null', async () => {
+            const acquired = await acquireLock(null, 'lock:key', 30);
+            assert.strictEqual(acquired, true);
+        });
+
+        it('releaseLock - should remove lock key from Redis', async () => {
+            const mockRedis = createMockRedis();
+            const lockKey = createRedisLockKey('transfer', 'user-1', 'key-1');
+
+            await acquireLock(mockRedis, lockKey, 30);
+            assert.strictEqual(mockRedis.store.has(lockKey), true);
+
+            const res = await releaseLock(mockRedis, lockKey);
+            assert.strictEqual(res, 1);
+            assert.strictEqual(mockRedis.store.has(lockKey), false);
+        });
+
+        it('releaseLock - should return 1 when client is null', async () => {
+            const res = await releaseLock(null, 'lock:key');
+            assert.strictEqual(res, 1);
+        });
+
+        it('releaseLock - should handle errors gracefully and return 0', async () => {
+            const faultyClient = {
+                del: async () => {
+                    throw new Error('Connection lost');
+                }
+            };
+            const res = await releaseLock(faultyClient, 'lock:key');
+            assert.strictEqual(res, 0);
+        });
     });
 
-    it('should execute function and store result in Redis on first call', async () => {
-        const mockRedis = createMockRedis();
-        let executionCount = 0;
+    describe('set, get, del', () => {
+        it('set - should store value with options', async () => {
+            const mockRedis = createMockRedis();
+            const key = createRedisKey('transfer', 'u1', 'k1');
+            const res = await set(mockRedis, key, JSON.stringify({ status: 'PENDING' }), { EX: 300 });
+            assert.strictEqual(res, 'OK');
+            assert.strictEqual(mockRedis.store.get(key), JSON.stringify({ status: 'PENDING' }));
+        });
 
-        const result = await idempotency(
-            'key-1',
-            'user-1',
-            { amount: 100 },
-            async () => {
-                executionCount++;
-                return { transferId: 'tx-123', status: 'COMPLETED' };
-            },
-            { redis: mockRedis }
-        );
+        it('set - should support numeric ttl options', async () => {
+            const mockRedis = createMockRedis();
+            const key = createRedisKey('transfer', 'u1', 'k1');
+            const res = await set(mockRedis, key, 'val', 60);
+            assert.strictEqual(res, 'OK');
+        });
 
-        assert.strictEqual(executionCount, 1);
-        assert.deepStrictEqual(result, { transferId: 'tx-123', status: 'COMPLETED' });
+        it('set - should return null if client is null', async () => {
+            const res = await set(null, 'key', 'val');
+            assert.strictEqual(res, null);
+        });
 
-        const record = JSON.parse(await mockRedis.get('idempotency:user-1:key-1'));
-        assert.strictEqual(record.status, 'COMPLETED');
-        assert.deepStrictEqual(record.responseBody, { transferId: 'tx-123', status: 'COMPLETED' });
-    });
+        it('get - should retrieve stored value', async () => {
+            const mockRedis = createMockRedis();
+            const key = createRedisKey('transfer', 'u1', 'k1');
+            mockRedis.store.set(key, 'cached-value');
 
-    it('should replay cached response on second call with same body without re-executing', async () => {
-        const mockRedis = createMockRedis();
-        let executionCount = 0;
+            const val = await get(mockRedis, key);
+            assert.strictEqual(val, 'cached-value');
+        });
 
-        const run = () => idempotency(
-            'key-1',
-            'user-1',
-            { amount: 100 },
-            async () => {
-                executionCount++;
-                return { transferId: 'tx-123', status: 'COMPLETED' };
-            },
-            { redis: mockRedis }
-        );
+        it('get - should return null when key not found or client null', async () => {
+            const mockRedis = createMockRedis();
+            assert.strictEqual(await get(mockRedis, 'missing'), null);
+            assert.strictEqual(await get(null, 'missing'), null);
+        });
 
-        const firstResult = await run();
-        const secondResult = await run();
+        it('del - should delete stored value', async () => {
+            const mockRedis = createMockRedis();
+            mockRedis.store.set('key-del', 'to-delete');
 
-        assert.strictEqual(executionCount, 1);
-        assert.deepStrictEqual(firstResult, secondResult);
-    });
+            const res = await del(mockRedis, 'key-del');
+            assert.strictEqual(res, 1);
+            assert.strictEqual(mockRedis.store.has('key-del'), false);
+        });
 
-    it('should throw UnprocessableEntityError if key is reused with different request body', async () => {
-        const mockRedis = createMockRedis();
-
-        await idempotency(
-            'key-1',
-            'user-1',
-            { amount: 100 },
-            async () => ({ transferId: 'tx-123' }),
-            { redis: mockRedis }
-        );
-
-        await assert.rejects(
-            () => idempotency(
-                'key-1',
-                'user-1',
-                { amount: 200 },
-                async () => ({ transferId: 'tx-456' }),
-                { redis: mockRedis }
-            ),
-            (err) => {
-                assert.ok(err instanceof UnprocessableEntityError);
-                assert.strictEqual(err.message, 'Idempotency key reused with different request body');
-                return true;
-            }
-        );
-    });
-
-    it('should throw ConflictError if request is currently IN_PROGRESS', async () => {
-        const mockRedis = createMockRedis();
-        const reqFingerprint = fingerprint({ amount: 100 });
-
-        await mockRedis.set(
-            'idempotency:user-1:key-1',
-            JSON.stringify({
-                key: 'key-1',
-                userId: 'user-1',
-                status: 'IN_PROGRESS',
-                requestFingerprint: reqFingerprint
-            })
-        );
-
-        await assert.rejects(
-            () => idempotency(
-                'key-1',
-                'user-1',
-                { amount: 100 },
-                async () => ({ transferId: 'tx-123' }),
-                { redis: mockRedis }
-            ),
-            (err) => {
-                assert.ok(err instanceof ConflictError);
-                assert.strictEqual(err.message, 'A request with this Idempotency-Key is already being processed');
-                return true;
-            }
-        );
-    });
-
-    it('should release key and throw ConflictError when previous request FAILED', async () => {
-        const mockRedis = createMockRedis();
-        const reqFingerprint = fingerprint({ amount: 100 });
-
-        await mockRedis.set(
-            'idempotency:user-1:key-1',
-            JSON.stringify({
-                key: 'key-1',
-                userId: 'user-1',
-                status: 'FAILED',
-                requestFingerprint: reqFingerprint
-            })
-        );
-
-        await assert.rejects(
-            () => idempotency(
-                'key-1',
-                'user-1',
-                { amount: 100 },
-                async () => ({ transferId: 'tx-123' }),
-                { redis: mockRedis }
-            ),
-            (err) => {
-                assert.ok(err instanceof ConflictError);
-                assert.match(err.message, /The previous request with this key failed/);
-                return true;
-            }
-        );
-
-        // Key should have been released (deleted)
-        const record = await mockRedis.get('idempotency:user-1:key-1');
-        assert.strictEqual(record, null);
-    });
-
-    it('should mark record as FAILED and rethrow error if fn throws', async () => {
-        const mockRedis = createMockRedis();
-
-        await assert.rejects(
-            () => idempotency(
-                'key-1',
-                'user-1',
-                { amount: 100 },
-                async () => {
-                    throw new Error('Database down');
-                },
-                { redis: mockRedis }
-            ),
-            (err) => {
-                assert.strictEqual(err.message, 'Database down');
-                return true;
-            }
-        );
-
-        const record = JSON.parse(await mockRedis.get('idempotency:user-1:key-1'));
-        assert.strictEqual(record.status, 'FAILED');
-        assert.strictEqual(record.error.message, 'Database down');
-    });
-
-    it('should support explicit positional arguments (key, userId, body, fn, options)', async () => {
-        const mockRedis = createMockRedis();
-
-        const result = await idempotency(
-            'key-pos',
-            'user-pos',
-            { foo: 'bar' },
-            async () => 'success',
-            { redis: mockRedis }
-        );
-
-        assert.strictEqual(result, 'success');
+        it('del - should return 0 if client is null', async () => {
+            const res = await del(null, 'key-del');
+            assert.strictEqual(res, 0);
+        });
     });
 });

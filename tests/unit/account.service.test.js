@@ -9,7 +9,8 @@ import {
 } from '../../services/account.js';
 import {
   DuplicateAccountError,
-  NotFoundError
+  NotFoundError,
+  BadRequestError
 } from '../../common/domain-exceptions/domain-exceptions.js';
 
 describe('AccountService', () => {
@@ -25,19 +26,21 @@ describe('AccountService', () => {
     };
   });
 
-  it('createAccount - should create an account when email is not duplicate', async () => {
+  it('createAccount - should create an account with userId when email is not duplicate', async () => {
     mockAccountModel.findOne = mock.fn(async () => null);
     mockAccountModel.create = mock.fn(async () => ({
       id: 'acc-123',
       name: 'Jane Doe',
       email: 'jane@example.com',
-      balance: 50000n
+      balance: 50000n,
+      userId: 'usr-jane-1'
     }));
 
     const result = await createAccount(
       'Jane Doe',
       'jane@example.com',
       50000,
+      'usr-jane-1',
       { Account: mockAccountModel }
     );
 
@@ -48,6 +51,7 @@ describe('AccountService', () => {
     assert.strictEqual(createdArg.name, 'Jane Doe');
     assert.strictEqual(createdArg.email, 'jane@example.com');
     assert.strictEqual(createdArg.balance, 50000);
+    assert.strictEqual(createdArg.userId, 'usr-jane-1');
 
     assert.deepStrictEqual(result, {
       id: 'acc-123',
@@ -58,12 +62,21 @@ describe('AccountService', () => {
     });
   });
 
+  it('createAccount - should throw BadRequestError when userId is missing', async () => {
+    await assert.rejects(
+      createAccount('Jane Doe', 'jane@example.com', 50000, '', { Account: mockAccountModel }),
+      BadRequestError
+    );
+
+    assert.strictEqual(mockAccountModel.create.mock.callCount(), 0);
+  });
+
   it('createAccount - should throw DuplicateAccountError when email already exists', async () => {
     mockAccountModel.findOne = mock.fn(async () => ({ id: 'existing-id', email: 'jane@example.com' }));
     mockAccountModel.create = mock.fn();
 
     await assert.rejects(
-      createAccount('Jane Doe', 'jane@example.com', 50000, { Account: mockAccountModel }),
+      createAccount('Jane Doe', 'jane@example.com', 50000, 'usr-jane-1', { Account: mockAccountModel }),
       DuplicateAccountError
     );
 

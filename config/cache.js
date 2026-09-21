@@ -1,4 +1,4 @@
-import { createClient } from 'redis';
+import { createClient } from 'redis'; //redis.io
 
 async function createRedisClient(redis_url) {
     const client = createClient({

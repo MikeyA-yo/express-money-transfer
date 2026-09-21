@@ -38,6 +38,8 @@ describe('MongoDB Migrations', () => {
 
         const accountsColl = db.collection('accounts');
         const transfersColl = db.collection('transfers');
+        const usersColl = db.collection('users');
+
         const legacyAccount = {
             id: 'legacy-1',
             name: 'Legacy User',
@@ -52,20 +54,34 @@ describe('MongoDB Migrations', () => {
             amount: mongoose.Types.Decimal128.fromString('25.50'),
             deleted: false
         };
+        const legacyUser = {
+            id: 'user-legacy-1',
+            name: 'Legacy User',
+            email: 'legacy@example.com',
+            accountId: 'legacy-1'
+        };
+
         await accountsColl.insertOne(legacyAccount);
         await transfersColl.insertOne(legacyTransfer);
+        await usersColl.insertOne(legacyUser);
 
         const initialStatus = await migrateMongo.status(db);
-        assert.ok(initialStatus.length >= 2);
+        assert.ok(initialStatus.length >= 3);
         assert.ok(initialStatus.every((entry) => entry.appliedAt === 'PENDING'));
 
         const migrated = await migrateMongo.up(db, client);
-        assert.strictEqual(migrated.length, 2);
+        assert.strictEqual(migrated.length, 3);
 
         const updatedAccount = await accountsColl.findOne({ id: 'legacy-1' });
         assert.strictEqual(updatedAccount.currency, 'USD');
         assert.strictEqual(updatedAccount.schemaVersion, 1);
         assert.strictEqual(Number(updatedAccount.balance), 50000);
+        // Verified Account now has userId pointing to user
+        assert.strictEqual(updatedAccount.userId, 'user-legacy-1');
+
+        const updatedUser = await usersColl.findOne({ id: 'user-legacy-1' });
+        // Verified User no longer has accountId
+        assert.strictEqual(updatedUser.accountId, undefined);
 
         const updatedTransfer = await transfersColl.findOne({ id: 'legacy-tr-1' });
         assert.strictEqual(Number(updatedTransfer.amount), 2550);
@@ -78,18 +94,15 @@ describe('MongoDB Migrations', () => {
         const secondRunMigrated = await migrateMongo.up(db, client);
         assert.strictEqual(secondRunMigrated.length, 0);
 
+        // Rollback the last migration (move-account-ref-to-account)
         const rolledBack = await migrateMongo.down(db, client);
         assert.strictEqual(rolledBack.length, 1);
-        assert.strictEqual(rolledBack[0], migrated[1]);
+        assert.strictEqual(rolledBack[0], migrated[2]);
 
-        const accountAfterAmountRollback = await accountsColl.findOne({ id: 'legacy-1' });
-        assert.strictEqual(accountAfterAmountRollback.currency, 'USD');
-        assert.strictEqual(Number(accountAfterAmountRollback.balance.toString()), 500);
+        const userAfterRollback = await usersColl.findOne({ id: 'user-legacy-1' });
+        assert.strictEqual(userAfterRollback.accountId, 'legacy-1');
 
-        const transferAfterAmountRollback = await transfersColl.findOne({ id: 'legacy-tr-1' });
-        assert.strictEqual(Number(transferAfterAmountRollback.amount.toString()), 25.5);
-
-        const amountMigrationChangelog = await changelogColl.findOne({ fileName: migrated[1] });
-        assert.strictEqual(amountMigrationChangelog, null);
+        const accountAfterRollback = await accountsColl.findOne({ id: 'legacy-1' });
+        assert.strictEqual(accountAfterRollback.userId, undefined);
     });
 });

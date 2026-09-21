@@ -55,6 +55,7 @@ export function verifyToken(token) {
 export async function login({ email, password, role } = {}, {
   User = models.User,
   Admin = models.Admin,
+  Account = models.Account,
   comparePassword = bcrypt.compare
 } = {}) {
   if (!email || !password) {
@@ -92,12 +93,14 @@ export async function login({ email, password, role } = {}, {
       throw UnauthorizedError('Invalid email or password');
     }
 
+    const account = await Account.findOne({ userId: user.id, deleted: { $ne: true } });
+
     const payload = {
       id: user.id,
       name: user.name,
       email: user.email,
       role: 'user',
-      accountId: user.accountId
+      accountId: account?.id
     };
     const token = generateToken(payload);
     return { token, user: payload };
@@ -125,12 +128,13 @@ export async function login({ email, password, role } = {}, {
     if (!isPasswordValid) {
       throw UnauthorizedError('Invalid email or password');
     }
+    const account = await Account.findOne({ userId: user.id, deleted: { $ne: true } });
     const payload = {
       id: user.id,
       name: user.name,
       email: user.email,
       role: 'user',
-      accountId: user.accountId
+      accountId: account?.id
     };
     const token = generateToken(payload);
     return { token, user: payload };
@@ -146,7 +150,8 @@ export async function login({ email, password, role } = {}, {
  */
 export async function getCurrentProfile(userPayload, {
   User = models.User,
-  Admin = models.Admin
+  Admin = models.Admin,
+  Account = models.Account
 } = {}) {
   if (!userPayload || !userPayload.id) {
     throw UnauthorizedError('Authentication required');
@@ -164,12 +169,13 @@ export async function getCurrentProfile(userPayload, {
   } else {
     const user = await User.findOne({ id: userPayload.id });
     if (user) {
+      const account = await Account.findOne({ userId: user.id });
       return {
         id: user.id,
         name: user.name,
         email: user.email,
         role: 'user',
-        accountId: user.accountId
+        accountId: account?.id
       };
     }
   }
@@ -179,7 +185,7 @@ export async function getCurrentProfile(userPayload, {
 
 /**
  * Register a new user, automatically create a linked account with a random balance,
- * and link the account id to the user.
+ * and link the account to the user by setting account.userId.
  * @param {object} params - { name, email, password, initialBalance }
  * @param {object} [deps] - Dependency injection options
  * @returns {Promise<{ token: string, user: object, account: object }>}
@@ -205,20 +211,20 @@ export async function signup({ name, email, password, initialBalance } = {}, {
     ? Number(initialBalance)
     : Math.floor(Math.random() * 240000 + 10000);
 
-  // Automatically create a linked account (throws DuplicateAccountError if account email exists)
-  const account = await createAccountFn(name, email, balance, { Account });
-
   // Hash password with bcrypt
   const passwordHash = await hashPassword(password, 10);
+  const userId = Date.now().toString() + Math.random().toString(36).slice(2, 8);
 
-  // Create User linked to account.id
+  // Create User first (without accountId)
   const user = await User.create({
-    id: account.id,
+    id: userId,
     name,
     email,
-    accountId: account.id,
     password: passwordHash
   });
+
+  // Automatically create a linked account with userId = user.id
+  const account = await createAccountFn(name, email, balance, user.id, { Account });
 
   const tokenPayload = {
     id: user.id,

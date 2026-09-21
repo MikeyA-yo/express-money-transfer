@@ -61,7 +61,8 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
       .send({
         name: 'Bob Marley',
         email: 'bob@example.com',
-        balance: 20000
+        balance: 20000,
+        userId: 'usr-bob'
       });
     assert.strictEqual(createBobRes.statusCode, 201);
     assert.strictEqual(createBobRes.body.balance, '200.00 USD');
@@ -76,7 +77,8 @@ describe('End-to-End (E2E) Workflow: Complete Money Transfer Lifecycle', () => {
       .send({
         name: 'Alice Clone',
         email: 'alice@example.com',
-        balance: 50000
+        balance: 50000,
+        userId: 'usr-alice-clone'
       });
     assert.strictEqual(duplicateRes.statusCode, 409);
     assert.match(duplicateRes.body.error, /Account already exists/);

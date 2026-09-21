@@ -42,26 +42,29 @@ export async function seedUsersFromAccounts() {
     for (const account of accounts) {
         const passwordHash = await bcrypt.hash(DEFAULT_SEED_PASSWORD, SALT_ROUNDS);
 
-        const existing = await User.findOne({
-            $or: [{ accountId: account.id }, { email: account.email }]
+        let user = await User.findOne({
+            $or: [{ id: account.userId }, { email: account.email }]
         });
 
-        if (existing) {
-            existing.name = account.name;
-            existing.email = account.email;
-            existing.accountId = account.id;
-            existing.password = passwordHash;
-            await existing.save();
-            logger.info(`Updated existing user for account ${account.id}: ${existing.name} (${existing.email})`);
+        if (user) {
+            user.name = account.name;
+            user.email = account.email;
+            user.password = passwordHash;
+            await user.save();
+            logger.info(`Updated existing user for account ${account.id}: ${user.name} (${user.email})`);
         } else {
-            const created = await runUserSeed({
-                id: account.id,
+            user = await runUserSeed({
+                id: account.userId || account.id,
                 name: account.name,
                 email: account.email,
-                accountId: account.id,
                 password: passwordHash
             });
-            logger.info(`Seeded user successfully: ${created.name} (${created.email}) linked to account ${created.accountId}`);
+            logger.info(`Seeded user successfully: ${user.name} (${user.email}) for account ${account.id}`);
+        }
+
+        if (!account.userId || account.userId !== user.id) {
+            account.userId = user.id;
+            await account.save();
         }
     }
     logger.info('User seeding from accounts completed.');

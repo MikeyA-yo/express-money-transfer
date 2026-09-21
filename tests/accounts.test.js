@@ -25,7 +25,8 @@ describe('Accounts API', () => {
             .send({
                 name: 'Test User',
                 email: 'test@example.com',
-                balance: 10000
+                balance: 10000,
+                userId: 'usr-test-1'
             });
         assert.strictEqual(res.statusCode, 201);
         assert.ok('id' in res.body);
@@ -40,7 +41,8 @@ describe('Accounts API', () => {
             .send({
                 name: 'Test User',
                 email: 'duplicate@example.com',
-                balance: 10000
+                balance: 10000,
+                userId: 'usr-dup-1'
             });
             
         const res = await request(app)
@@ -48,9 +50,48 @@ describe('Accounts API', () => {
             .send({
                 name: 'Test User',
                 email: 'duplicate@example.com',
-                balance: 10000
+                balance: 10000,
+                userId: 'usr-dup-2'
             });
         assert.strictEqual(res.statusCode, 409);
+    });
+
+    it('POST / - should return 400 if userId is missing', async () => {
+        const res = await request(app)
+            .post('/api/v1/accounts')
+            .send({
+                name: 'Missing User',
+                email: 'missing-user@example.com',
+                balance: 10000
+            });
+        assert.strictEqual(res.statusCode, 400);
+    });
+
+    it('POST / - should create account with provided userId and persist it', async () => {
+        const res = await request(app)
+            .post('/api/v1/accounts')
+            .send({
+                name: 'User With ID',
+                email: 'with-user-id@example.com',
+                balance: 20000,
+                userId: 'usr-custom-id-999'
+            });
+        assert.strictEqual(res.statusCode, 201);
+        const createdAccount = await Account.findOne({ id: res.body.id });
+        assert.ok(createdAccount);
+        assert.strictEqual(createdAccount.userId, 'usr-custom-id-999');
+    });
+
+    it('POST / - should return 400 if userId is empty string', async () => {
+        const res = await request(app)
+            .post('/api/v1/accounts')
+            .send({
+                name: 'User Bad ID',
+                email: 'bad-id@example.com',
+                balance: 20000,
+                userId: ''
+            });
+        assert.strictEqual(res.statusCode, 400);
     });
 
     it('GET / - should return empty list if no accounts when authenticated as admin', async () => {
@@ -75,7 +116,8 @@ describe('Accounts API', () => {
                 .send({
                     name: 'Soft Delete User',
                     email: 'softdelete@example.com',
-                    balance: 15000
+                    balance: 15000,
+                    userId: 'usr-delete-test'
                 });
             assert.strictEqual(createRes.statusCode, 201);
             const accountId = createRes.body.id;
@@ -99,10 +141,10 @@ describe('Accounts API', () => {
             // 1. Create two accounts
             const acc1Res = await request(app)
                 .post('/api/v1/accounts')
-                .send({ name: 'Active User', email: 'active@example.com', balance: 20000 });
+                .send({ name: 'Active User', email: 'active@example.com', balance: 20000, userId: 'usr-active-1' });
             const acc2Res = await request(app)
                 .post('/api/v1/accounts')
-                .send({ name: 'To Delete User', email: 'todelete@example.com', balance: 30000 });
+                .send({ name: 'To Delete User', email: 'todelete@example.com', balance: 30000, userId: 'usr-todelete' });
 
             assert.strictEqual(acc1Res.statusCode, 201);
             assert.strictEqual(acc2Res.statusCode, 201);

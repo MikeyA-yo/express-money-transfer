@@ -5,8 +5,16 @@ import baseSchema from './basePlugin.js';
 let accountSchema = new Schema({
     name: { type: String, required: true, get: v => v.trim() },
     email: { type: String, required: true },
-    balance: { type: BigInt, required: true, default: 1000000 },
+    balance: { type: BigInt, required: true, default: 1000000n },
     currency: { type: String, required: true, default: 'USD' },
+    userId: { type: String, required: true, unique: true, sparse: true, ref: 'User' },
+});
+
+accountSchema.virtual('user', {
+    ref: 'User',
+    localField: 'userId',
+    foreignField: 'id',
+    justOne: true
 });
 
 accountSchema.pre('validate', function () {
@@ -23,5 +31,5 @@ accountSchema = baseSchema(accountSchema, {
     toObject: { virtuals: true }
 });
 
-const Account = mongoose.model('Account', accountSchema);
+const Account = mongoose.models.Account || mongoose.model('Account', accountSchema);
 export default Account;

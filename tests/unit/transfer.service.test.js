@@ -11,16 +11,19 @@ import {
   InsufficientFundsError,
   UnauthorizedError,
   ForbiddenError,
-  BadRequestError
+  BadRequestError,
+  ConflictError,
+  UnprocessableEntityError,
 } from '../../common/domain-exceptions/domain-exceptions.js';
+import { fingerprint } from '../../util/idempotency.js';
 
 describe('TransferService', () => {
   let mockAccountModel;
   let mockTransferModel;
   let mockUserModel;
   let mockSession;
-  let mockIdempotent;
-  const actor = { id: 'usr-1', email: 'alice@test.com', role: 'user', accountId: 'acc-1' };
+  let mockRedis;
+  const actor = { id: 'usr-1', email: 'alice@test.com', role: 'user' };
 
   beforeEach(() => {
     mockSession = {
@@ -30,12 +33,34 @@ describe('TransferService', () => {
 
     mock.method(mongoose, 'startSession', async () => mockSession);
 
-    mockAccountModel = {
-      findOne: mock.fn()
+    mockUserModel = {
+      findOne: mock.fn(async (query) => {
+        if (query?.id === actor.id) {
+          return { id: actor.id, email: actor.email, role: actor.role };
+        }
+        return null;
+      })
     };
 
-    mockUserModel = {
-      findOne: mock.fn(async () => ({ id: actor.id, accountId: 'acc-1' }))
+    mockAccountModel = {
+      findOne: mock.fn(async (query) => {
+        if (query?.userId === actor.id) {
+          return { id: 'acc-1', userId: actor.id, balance: 10000n };
+        }
+        return null;
+      }),
+      updateOne: mock.fn(async (filter, update, options) => {
+        if (filter?.id === 'acc-1') {
+          if (filter?.balance?.$gte && filter.balance.$gte > 10000n) {
+            return { modifiedCount: 0 };
+          }
+          return { modifiedCount: 1 };
+        }
+        if (filter?.id === 'acc-2') {
+          return { modifiedCount: 1 };
+        }
+        return { modifiedCount: 0 };
+      })
     };
 
     mockTransferModel = mock.fn(function (data) {
@@ -54,7 +79,11 @@ describe('TransferService', () => {
     mockTransferModel.findOne = mock.fn();
     mockTransferModel.find = mock.fn();
 
-    mockIdempotent = mock.fn(async (key, userId, body, fn) => await fn());
+    mockRedis = {
+      get: mock.fn(async () => null),
+      set: mock.fn(async () => 'OK'),
+      del: mock.fn(async () => 1)
+    };
   });
 
   afterEach(() => {
@@ -67,7 +96,7 @@ describe('TransferService', () => {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel,
-        idempotent: mockIdempotent
+        redis: mockRedis
       }),
       BadRequestError
     );
@@ -79,12 +108,11 @@ describe('TransferService', () => {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel,
-        idempotent: mockIdempotent
+        redis: mockRedis
       }),
       UnauthorizedError
     );
 
-    assert.strictEqual(mockUserModel.findOne.mock.callCount(), 0);
     assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
   });
 
@@ -96,13 +124,28 @@ describe('TransferService', () => {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel,
-        idempotent: mockIdempotent
+        redis: mockRedis
       }),
       UnauthorizedError
     );
 
     assert.strictEqual(mockUserModel.findOne.mock.callCount(), 1);
-    assert.deepStrictEqual(mockUserModel.findOne.mock.calls[0].arguments, [{ id: actor.id }]);
+    assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
+  });
+
+  it('newTransfer - should throw UnauthorizedError if no account belongs to the user', async () => {
+    mockAccountModel.findOne = mock.fn(async () => null);
+
+    await assert.rejects(
+      newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-test-key', {
+        Account: mockAccountModel,
+        Transfer: mockTransferModel,
+        User: mockUserModel,
+        redis: mockRedis
+      }),
+      UnauthorizedError
+    );
+
     assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
   });
 
@@ -112,25 +155,7 @@ describe('TransferService', () => {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel,
-        idempotent: mockIdempotent
-      }),
-      ForbiddenError
-    );
-
-    assert.strictEqual(mockUserModel.findOne.mock.callCount(), 1);
-    assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
-    assert.strictEqual(mockAccountModel.findOne.mock.callCount(), 0);
-  });
-
-  it('newTransfer - should not trust a spoofed actor.accountId over the persisted user account', async () => {
-    const spoofedActor = { ...actor, accountId: 'acc-spoofed' };
-
-    await assert.rejects(
-      newTransfer('acc-spoofed', 'acc-2', 5000, spoofedActor, 'idem-test-key', {
-        Account: mockAccountModel,
-        Transfer: mockTransferModel,
-        User: mockUserModel,
-        idempotent: mockIdempotent
+        redis: mockRedis
       }),
       ForbiddenError
     );
@@ -144,9 +169,99 @@ describe('TransferService', () => {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel,
-        idempotent: mockIdempotent
+        redis: mockRedis
       }),
       BadRequestError
+    );
+
+    assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
+  });
+
+  it('newTransfer - should return cached response if key exists and status is COMPLETED with matching fingerprint', async () => {
+    const cachedResponse = {
+      id: 'tr-cached',
+      status: 'COMPLETED',
+      from: 'acc-1',
+      to: 'acc-2',
+      amount: 5000
+    };
+    const reqFingerprint = fingerprint({ fromAccountId: 'acc-1', toAccountId: 'acc-2', amount: '5000' });
+
+    mockRedis.get = mock.fn(async () => JSON.stringify({
+      status: 'COMPLETED',
+      fingerprint: reqFingerprint,
+      response: cachedResponse
+    }));
+
+    const result = await newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-test-key', {
+      Account: mockAccountModel,
+      Transfer: mockTransferModel,
+      User: mockUserModel,
+      redis: mockRedis
+    });
+
+    assert.deepStrictEqual(result, cachedResponse);
+    // Database transaction should not be opened on cache hit
+    assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
+  });
+
+  it('newTransfer - should throw UnprocessableEntityError if key exists with different fingerprint', async () => {
+    mockRedis.get = mock.fn(async () => JSON.stringify({
+      status: 'COMPLETED',
+      fingerprint: 'different-fingerprint',
+      response: {}
+    }));
+
+    await assert.rejects(
+      newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-test-key', {
+        Account: mockAccountModel,
+        Transfer: mockTransferModel,
+        User: mockUserModel,
+        redis: mockRedis
+      }),
+      UnprocessableEntityError
+    );
+
+    assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
+  });
+
+  it('newTransfer - should throw ConflictError if key exists with status PENDING', async () => {
+    const reqFingerprint = fingerprint({ fromAccountId: 'acc-1', toAccountId: 'acc-2', amount: '5000' });
+
+    mockRedis.get = mock.fn(async () => JSON.stringify({
+      status: 'PENDING',
+      fingerprint: reqFingerprint
+    }));
+
+    await assert.rejects(
+      newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-test-key', {
+        Account: mockAccountModel,
+        Transfer: mockTransferModel,
+        User: mockUserModel,
+        redis: mockRedis
+      }),
+      ConflictError
+    );
+
+    assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
+  });
+
+  it('newTransfer - should throw ConflictError if lock cannot be acquired', async () => {
+    mockRedis.get = mock.fn(async () => null);
+    // Return null or false on lock attempt (mutex already held by concurrent request)
+    mockRedis.set = mock.fn(async (key, val, opts) => {
+      if (key.startsWith('lock:')) return null;
+      return 'OK';
+    });
+
+    await assert.rejects(
+      newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-test-key', {
+        Account: mockAccountModel,
+        Transfer: mockTransferModel,
+        User: mockUserModel,
+        redis: mockRedis
+      }),
+      ConflictError
     );
 
     assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
@@ -157,6 +272,7 @@ describe('TransferService', () => {
     const mockQueryTo = { session: mock.fn(async () => ({ id: 'acc-2', balance: 10000n })) };
 
     mockAccountModel.findOne = mock.fn((filter) => {
+      if (filter?.userId === actor.id) return Promise.resolve({ id: 'acc-1', userId: actor.id, balance: 10000n });
       if (filter?.id === 'acc-1') return mockQueryFrom;
       return mockQueryTo;
     });
@@ -166,32 +282,46 @@ describe('TransferService', () => {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel,
-        idempotent: mockIdempotent
+        redis: mockRedis
       }),
       NotFoundError
     );
 
     assert.strictEqual(mockSession.endSession.mock.callCount(), 1);
+    // Lock should be released and pending record deleted
+    assert.ok(mockRedis.del.mock.callCount() >= 1);
   });
 
   it('newTransfer - should throw InsufficientFundsError if sender balance is less than transfer amount', async () => {
     const accountFrom = {
       id: 'acc-1',
       balance: 3000n,
-      save: mock.fn(async () => true)
     };
     const accountTo = {
       id: 'acc-2',
       balance: 10000n,
-      save: mock.fn(async () => true)
     };
 
     const mockQueryFrom = { session: mock.fn(async () => accountFrom) };
     const mockQueryTo = { session: mock.fn(async () => accountTo) };
 
     mockAccountModel.findOne = mock.fn((filter) => {
+      if (filter?.userId === actor.id) return Promise.resolve({ id: 'acc-1', userId: actor.id, balance: 3000n });
       if (filter?.id === 'acc-1') return mockQueryFrom;
       return mockQueryTo;
+    });
+
+    mockAccountModel.updateOne = mock.fn(async (filter, update) => {
+      if (filter?.id === 'acc-1') {
+        if (filter?.balance?.$gte && accountFrom.balance < filter.balance.$gte) {
+          return { modifiedCount: 0 };
+        }
+        return { modifiedCount: 1 };
+      }
+      if (filter?.id === 'acc-2') {
+        return { modifiedCount: 1 };
+      }
+      return { modifiedCount: 0 };
     });
 
     await assert.rejects(
@@ -199,41 +329,58 @@ describe('TransferService', () => {
         Account: mockAccountModel,
         Transfer: mockTransferModel,
         User: mockUserModel,
-        idempotent: mockIdempotent
+        redis: mockRedis
       }),
       InsufficientFundsError
     );
 
     assert.strictEqual(mockSession.endSession.mock.callCount(), 1);
+    assert.ok(mockRedis.del.mock.callCount() >= 1);
   });
 
-  it('newTransfer - should complete transfer, update balances as bigint, and return formatted money fields', async () => {
-    const saveFromMock = mock.fn(async () => true);
-    const saveToMock = mock.fn(async () => true);
+  it('newTransfer - should complete transfer, update balances, save COMPLETED in Redis, and release lock', async () => {
     const accountFrom = {
       id: 'acc-1',
       balance: 10000n,
-      save: saveFromMock
     };
     const accountTo = {
       id: 'acc-2',
       balance: 5000n,
-      save: saveToMock
     };
 
     const mockQueryFrom = { session: mock.fn(async () => accountFrom) };
     const mockQueryTo = { session: mock.fn(async () => accountTo) };
 
     mockAccountModel.findOne = mock.fn((filter) => {
+      if (filter?.userId === actor.id) return Promise.resolve({ id: 'acc-1', userId: actor.id, balance: 10000n });
       if (filter?.id === 'acc-1') return mockQueryFrom;
       return mockQueryTo;
+    });
+
+    mockAccountModel.updateOne = mock.fn(async (filter, update) => {
+      if (filter?.id === 'acc-1') {
+        if (filter?.balance?.$gte && accountFrom.balance < filter.balance.$gte) {
+          return { modifiedCount: 0 };
+        }
+        if (update?.$inc?.balance) {
+          accountFrom.balance += update.$inc.balance;
+        }
+        return { modifiedCount: 1 };
+      }
+      if (filter?.id === 'acc-2') {
+        if (update?.$inc?.balance) {
+          accountTo.balance += update.$inc.balance;
+        }
+        return { modifiedCount: 1 };
+      }
+      return { modifiedCount: 0 };
     });
 
     const result = await newTransfer('acc-1', 'acc-2', 4000, actor, 'idem-test-key', {
       Account: mockAccountModel,
       Transfer: mockTransferModel,
       User: mockUserModel,
-      idempotent: mockIdempotent
+      redis: mockRedis
     });
 
     assert.ok(result.id);
@@ -245,39 +392,27 @@ describe('TransferService', () => {
     assert.strictEqual(result.amountMinor, '4000 USDMINOR');
     assert.strictEqual(accountFrom.balance, 6000n);
     assert.strictEqual(accountTo.balance, 9000n);
-    assert.strictEqual(saveFromMock.mock.callCount(), 1);
-    assert.strictEqual(saveToMock.mock.callCount(), 1);
+    assert.strictEqual(mockAccountModel.updateOne.mock.callCount(), 2);
+    assert.deepStrictEqual(mockAccountModel.updateOne.mock.calls[0].arguments[0], {
+      id: 'acc-1',
+      balance: { $gte: 4000n }
+    });
+    assert.deepStrictEqual(mockAccountModel.updateOne.mock.calls[0].arguments[1], {
+      $inc: { balance: -4000n }
+    });
+    assert.deepStrictEqual(mockAccountModel.updateOne.mock.calls[1].arguments[0], {
+      id: 'acc-2'
+    });
+    assert.deepStrictEqual(mockAccountModel.updateOne.mock.calls[1].arguments[1], {
+      $inc: { balance: 4000n }
+    });
     assert.strictEqual(mockSession.endSession.mock.callCount(), 1);
-    assert.deepStrictEqual(mockUserModel.findOne.mock.calls[0].arguments, [{ id: actor.id }]);
-  });
 
-  it('newTransfer - should wrap transfer execution with idempotent runner when idempotencyKey is provided', async () => {
-    const senderAccount = { id: 'acc-1', balance: 10000n, save: mock.fn(async () => undefined) };
-    const receiverAccount = { id: 'acc-2', balance: 2000n, save: mock.fn(async () => undefined) };
-
-    mockAccountModel.findOne = mock.fn((query) => {
-      if (query.id === 'acc-1') return { session: () => senderAccount };
-      if (query.id === 'acc-2') return { session: () => receiverAccount };
-      return { session: () => null };
-    });
-
-    const customIdempotent = mock.fn(async (key, userId, body, fn) => {
-      assert.strictEqual(key, 'idem-key-custom');
-      assert.strictEqual(userId, actor.id);
-      assert.deepStrictEqual(body, { fromAccountId: 'acc-1', toAccountId: 'acc-2', amount: '5000' });
-      return await fn();
-    });
-
-    const result = await newTransfer('acc-1', 'acc-2', 5000, actor, 'idem-key-custom', {
-      Transfer: mockTransferModel,
-      Account: mockAccountModel,
-      User: mockUserModel,
-      idempotent: customIdempotent
-    });
-
-    assert.strictEqual(customIdempotent.mock.callCount(), 1);
-    assert.strictEqual(result.status, 'COMPLETED');
-    assert.strictEqual(result.amount, 5000);
+    // Verify Redis calls: Lock acquired, PENDING set, COMPLETED set, Lock released
+    const setCalls = mockRedis.set.mock.calls;
+    assert.ok(setCalls.some(c => c.arguments[0].startsWith('lock:') && c.arguments[2]?.NX === true));
+    assert.ok(setCalls.some(c => !c.arguments[0].startsWith('lock:') && JSON.parse(c.arguments[1]).status === 'COMPLETED'));
+    assert.ok(mockRedis.del.mock.calls.some(c => c.arguments[0].startsWith('lock:')));
   });
 
   it('getTransferById - should return formatted transfer if found', async () => {

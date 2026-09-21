@@ -36,8 +36,8 @@ describe('AccountController', () => {
     };
   });
 
-  it('createAccount - should invoke injected service and return 201 with created account', async () => {
-    mockReq.body = { name: 'Bob', email: 'bob@test.com', balance: 25000 };
+  it('createAccount - should invoke injected service with name, email, balance, userId and return 201 with created account', async () => {
+    mockReq.body = { name: 'Bob', email: 'bob@test.com', balance: 25000, userId: 'usr-bob-1' };
     const mockNewAccount = mock.fn(async () => ({
       id: 'acc-bob',
       name: 'Bob',
@@ -50,7 +50,7 @@ describe('AccountController', () => {
     await handler(mockReq, mockRes);
 
     assert.strictEqual(mockNewAccount.mock.callCount(), 1);
-    assert.deepStrictEqual(mockNewAccount.mock.calls[0].arguments, ['Bob', 'bob@test.com', 25000]);
+    assert.deepStrictEqual(mockNewAccount.mock.calls[0].arguments, ['Bob', 'bob@test.com', 25000, 'usr-bob-1']);
     assert.strictEqual(mockRes.status.mock.callCount(), 1);
     assert.deepStrictEqual(mockRes.status.mock.calls[0].arguments, [201]);
     assert.strictEqual(mockRes.json.mock.callCount(), 1);

@@ -3,8 +3,8 @@ import logger from "../config/logger.js";
 import * as accountService from "../services/account.js";
 
 export const createAccountHandler = ({ newAccount = accountService.createAccount } = {}) => async (req, res) => {
-  const { name, email, balance } = req.body;
-  const savedAccount = await newAccount(name, email, balance);
+  const { name, email, balance, userId } = req.body;
+  const savedAccount = await newAccount(name, email, balance, userId);
   logger.info("Account created", { accountId: savedAccount.id });
   return res.status(StatusCodes.CREATED).json(savedAccount);
 };

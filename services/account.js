@@ -1,7 +1,8 @@
 import Account from "../models/accounts.js";
 import {
   DuplicateAccountError,
-  NotFoundError
+  NotFoundError,
+  BadRequestError
 } from "../common/domain-exceptions/domain-exceptions.js";
 import { toAccountResponse, toAccountsResponse } from "../response-schema/index.js";
 
@@ -9,9 +10,13 @@ const models = {
   Account
 };
 
-export async function createAccount(name, email, balance, options = {}) {
+export async function createAccount(name, email, balance, userId, options = {}) {
   const accountModel = options.Account || options.account || models.Account;
   const id = Date.now().toString() + Math.random().toString(36).slice(2, 8);
+
+  if (!userId) {
+    throw BadRequestError("User ID is required");
+  }
 
   try {
     const existingAccount = await accountModel.findOne({ email });
@@ -20,7 +25,7 @@ export async function createAccount(name, email, balance, options = {}) {
       throw DuplicateAccountError("Account already exists for this email", { resource: "Account", email });
     }
 
-    const created = await accountModel.create({ id, name, email, balance });
+    const created = await accountModel.create({ id, name, email, balance, userId });
     return toAccountResponse(created);
   } catch (error) {
     throw error;

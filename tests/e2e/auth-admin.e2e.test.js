@@ -186,7 +186,8 @@ describe('Authentication & Admin E2E Tests', () => {
       .send({
         name: 'Corporate Account',
         email: 'corp@example.com',
-        balance: 500000
+        balance: 500000,
+        userId: 'usr-corp'
       });
 
     // Obtain admin token
