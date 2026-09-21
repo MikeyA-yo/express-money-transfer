@@ -7,5 +7,7 @@ export const globalConfig = (process) => {
         PORT: z.number().default(8000),
         MONGODB_URI: z.string().url(),
         REDIS_URL: z.string().url(),
+        PAYSTACK_TEST_PUBLIC_KEY: z.string(),
+        PAYSTACK_TEST_SECRET_KEY: z.string(),
     });
 }
