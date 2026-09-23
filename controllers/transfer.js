@@ -4,7 +4,7 @@ import * as transferService from '../services/transfer.js';
 
 export const createTransferHandler = ({ newTransfer = transferService.newTransfer } = {}) => async (req, res) => {
     const { fromAccountId, toAccountId, amountMinor } = req.body;
-    const idempotencyKey = req.headers?.['idempotency-key'] || req.headers?.['x-idempotency-key'] || req.validatedData?.['idempotency-key'] || req.body?.idempotencyKey;
+    const idempotencyKey = req.headers?.['x-idempotency-key'] || req.validatedData?.['x-idempotency-key'];
 
     const transferRes = await newTransfer(fromAccountId, toAccountId, amountMinor, req.user, idempotencyKey);
 

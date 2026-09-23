@@ -158,7 +158,7 @@ describe('TransferController', () => {
   });
 
   it('createTransfer - should invoke injected service with authenticated actor and return 201 with transfer result', async () => {
-    mockReq.headers = { 'idempotency-key': 'idem-key-1' };
+    mockReq.headers = { 'x-idempotency-key': 'idem-key-1' };
     mockReq.body = { fromAccountId: 'acc-1', toAccountId: 'acc-2', amountMinor: 5000 };
     const mockNewTransfer = mock.fn(async () => ({
       id: 'tr-1',
@@ -181,7 +181,7 @@ describe('TransferController', () => {
     assert.strictEqual(mockRes.json.mock.calls[0].arguments[0].status, 'COMPLETED');
   });
 
-  it('createTransfer - should throw BadRequestError when Idempotency-Key header is missing', async () => {
+  it('createTransfer - should throw BadRequestError when X-Idempotency-Key header is missing', async () => {
     mockReq.headers = {};
     mockReq.body = { fromAccountId: 'acc-1', toAccountId: 'acc-2', amountMinor: 5000 };
     const handler = createTransferHandler();

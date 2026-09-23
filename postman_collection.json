@@ -1,0 +1,313 @@
+{
+  "info": {
+    "_postman_id": "c71a3994-e3fb-463f-912a-8c541571d9ab",
+    "name": "Express Money Transfer API",
+    "description": "Postman Collection for testing Express Money Transfer with Paystack integration, external payouts, idempotency, and status verification.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "account_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transfer_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Signup New User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "    pm.collectionVariables.set('jwt_token', res.token);",
+                  "}",
+                  "if (res.user && res.user.accountId) {",
+                  "    pm.collectionVariables.set('account_id', res.user.accountId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ayomide Tester\",\n  \"email\": \"tester_{{$timestamp}}@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"initialBalance\": 1000000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signup"]
+            },
+            "description": "Registers a new user with an initial ledger balance ($10,000.00 / 1,000,000 minor units) and automatically captures jwt_token and account_id."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "    pm.collectionVariables.set('jwt_token', res.token);",
+                  "}",
+                  "if (res.user && res.user.accountId) {",
+                  "    pm.collectionVariables.set('account_id', res.user.accountId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tester_user@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. External Transfers (Paystack)",
+      "item": [
+        {
+          "name": "Resolve Bank Account Name",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transfers/external/resolve-account?accountNumber=0123456789&bankCode=001",
+              "host": ["{{baseUrl}}"],
+              "path": ["transfers", "external", "resolve-account"],
+              "query": [
+                {
+                  "key": "accountNumber",
+                  "value": "0123456789",
+                  "description": "10-digit NUBAN number"
+                },
+                {
+                  "key": "bankCode",
+                  "value": "001",
+                  "description": "Bank code (001 works unlimited in test mode without rate limit)"
+                }
+              ]
+            },
+            "description": "Resolves account holder name via Paystack / NIBSS before sending payout."
+          }
+        },
+        {
+          "name": "Initiate External Transfer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) {",
+                  "    pm.collectionVariables.set('transfer_id', res.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "idem-postman-{{$timestamp}}",
+                "description": "Enforces strict X-Idempotency-Key header standard"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"{{account_id}}\",\n  \"amountMinor\": 50000,\n  \"recipientAccountNumber\": \"0123456789\",\n  \"recipientBankCode\": \"058\",\n  \"recipientName\": \"Jane Doe\",\n  \"reason\": \"Postman payout test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transfers/external",
+              "host": ["{{baseUrl}}"],
+              "path": ["transfers", "external"]
+            },
+            "description": "Debits ledger atomically, acquires Redis idempotency lock, calls Paystack transfer API, and auto-settles status after ~2s."
+          }
+        },
+        {
+          "name": "Check Transfer Status (Real-time Gateway Query)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transfers/external/{{transfer_id}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["transfers", "external", "{{transfer_id}}", "status"]
+            },
+            "description": "Polls Paystack /transfer/verify/:reference in real-time, updates database, and triggers atomic balance refund if transfer failed."
+          }
+        },
+        {
+          "name": "Get External Transfer by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transfers/external/{{transfer_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["transfers", "external", "{{transfer_id}}"]
+            }
+          }
+        },
+        {
+          "name": "List My External Transfers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transfers/external?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["transfers", "external"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Internal Ledger Transfers",
+      "item": [
+        {
+          "name": "Internal Transfer Between Accounts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "idem-internal-{{$timestamp}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"{{account_id}}\",\n  \"toAccountId\": \"DESTINATION_ACCOUNT_ID\",\n  \"amountMinor\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transfers",
+              "host": ["{{baseUrl}}"],
+              "path": ["transfers"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Account & Balance",
+      "item": [
+        {
+          "name": "Check Account Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{account_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{account_id}}"]
+            },
+            "description": "Verifies that account balances are formatted with major and minor representations (e.g., $1000.00 USD, 100000 USDMINOR)."
+          }
+        }
+      ]
+    }
+  ]
+}

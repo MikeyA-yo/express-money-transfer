@@ -15,12 +15,8 @@ export const transferParams = z.object({
 });
 
 export const transferHeaders = z.object({
-    'idempotency-key': z.string().min(1, "Idempotency-Key header is required").optional(),
-    'x-idempotency-key': z.string().min(1, "Idempotency-Key header is required").optional(),
-}).passthrough().refine(
-    (headers) => Boolean(headers['idempotency-key'] || headers['x-idempotency-key']),
-    {
-        message: "Idempotency-Key header is required",
-        path: ["idempotency-key"]
-    }
-);
+    'x-idempotency-key': z.string({
+        required_error: "X-Idempotency-Key header is required",
+        invalid_type_error: "X-Idempotency-Key header is required"
+    }).min(1, "X-Idempotency-Key header is required"),
+}).passthrough();

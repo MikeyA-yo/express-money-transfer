@@ -38,3 +38,28 @@ export const toTransferResponse = (transfer) => {
 };
 
 export const toTransfersResponse = (transfers) => transfers.map(toTransferResponse);
+
+export const toExternalTransferResponse = (transfer) => {
+  const raw = transfer.toObject ? transfer.toObject() : transfer;
+  const amountBig = BigInt(raw.amount);
+  const money = createMoney(amountBig);
+  return {
+    id: raw.id,
+    fromAccountId: raw.fromAccountId,
+    amount: Number(amountBig),
+    amountMajor: toMajorFormat(money),
+    amountMinor: toMinorFormat(money),
+    currency: raw.currency || 'NGN',
+    reference: raw.reference,
+    transferCode: raw.transferCode || null,
+    recipientCode: raw.recipientCode || null,
+    recipient: raw.recipient,
+    status: raw.status,
+    reason: raw.reason || null,
+    failureReason: raw.failureReason || null,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt
+  };
+};
+
+export const toExternalTransfersResponse = (transfers) => transfers.map(toExternalTransferResponse);

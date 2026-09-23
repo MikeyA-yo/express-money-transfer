@@ -67,7 +67,7 @@ describe('Transfers API', () => {
         assert.strictEqual(res.body.error, 'Admin or Superadmin cannot perform this action');
     });
 
-    it('POST / - should return 400 if Idempotency-Key header is missing', async () => {
+    it('POST / - should return 400 if X-Idempotency-Key header is missing', async () => {
         const alice = await signupUser({
             name: 'Alice',
             email: 'alice@example.com',
@@ -85,8 +85,32 @@ describe('Transfers API', () => {
 
         assert.strictEqual(res.statusCode, 400);
         assert.ok(
-            res.body.error === 'Missing Idempotency-Key header' ||
-            (Array.isArray(res.body.error) && res.body.error.some(e => e.message?.includes('Idempotency-Key')))
+            res.body.error === 'Missing X-Idempotency-Key header' ||
+            (Array.isArray(res.body.error) && res.body.error.some(e => e.message?.includes('X-Idempotency-Key') || e.message?.includes('Idempotency-Key')))
+        );
+    });
+
+    it('POST / - should return 400 if legacy Idempotency-Key header is used without X-Idempotency-Key', async () => {
+        const alice = await signupUser({
+            name: 'Alice Legacy',
+            email: 'alice.legacy@example.com',
+            balance: 100000
+        });
+
+        const res = await request(app)
+            .post('/api/v1/transfers')
+            .set('Authorization', `Bearer ${alice.token}`)
+            .set('Idempotency-Key', 'legacy-key-123')
+            .send({
+                fromAccountId: alice.account.id,
+                toAccountId: 'acc2',
+                amountMinor: 10000
+            });
+
+        assert.strictEqual(res.statusCode, 400);
+        assert.ok(
+            Array.isArray(res.body.error) &&
+            res.body.error.some(e => e.message?.includes('X-Idempotency-Key header is required'))
         );
     });
 
@@ -101,7 +125,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${orphanToken}`)
-            .set('Idempotency-Key', 'idem-orphan-1')
+            .set('X-Idempotency-Key', 'idem-orphan-1')
             .send({
                 fromAccountId: 'acc-ghost',
                 toAccountId: 'acc-other',
@@ -127,7 +151,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${bob.token}`)
-            .set('Idempotency-Key', 'idem-bob-1')
+            .set('X-Idempotency-Key', 'idem-bob-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.account.id,
@@ -159,7 +183,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
-            .set('Idempotency-Key', 'idem-claimed-1')
+            .set('X-Idempotency-Key', 'idem-claimed-1')
             .send({
                 fromAccountId: 'not-alice-account',
                 toAccountId: destination.id,
@@ -180,7 +204,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
-            .set('Idempotency-Key', 'idem-same-1')
+            .set('X-Idempotency-Key', 'idem-same-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: alice.account.id,
@@ -200,7 +224,7 @@ describe('Transfers API', () => {
         const res = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
-            .set('Idempotency-Key', 'idem-dest-not-found-1')
+            .set('X-Idempotency-Key', 'idem-dest-not-found-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: 'nonexistent-destination',
@@ -230,7 +254,7 @@ describe('Transfers API', () => {
         const transferRes = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
-            .set('Idempotency-Key', 'idem-success-1')
+            .set('X-Idempotency-Key', 'idem-success-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.id,
@@ -273,7 +297,7 @@ describe('Transfers API', () => {
         const transferRes = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
-            .set('Idempotency-Key', 'idem-insufficient-1')
+            .set('X-Idempotency-Key', 'idem-insufficient-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.id,
@@ -284,7 +308,7 @@ describe('Transfers API', () => {
         assert.strictEqual(transferRes.body.error, 'Insufficient funds');
     });
 
-    it('POST / - should replay cached response when same Idempotency-Key is reused', async () => {
+    it('POST / - should replay cached response when same X-Idempotency-Key is reused', async () => {
         const alice = await signupUser({
             name: 'Alice',
             email: 'alice@example.com',
@@ -305,7 +329,7 @@ describe('Transfers API', () => {
         const res1 = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
-            .set('Idempotency-Key', 'idem-replay-key-1')
+            .set('X-Idempotency-Key', 'idem-replay-key-1')
             .send(body);
 
         assert.strictEqual(res1.statusCode, 201);
@@ -313,7 +337,7 @@ describe('Transfers API', () => {
         const res2 = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
-            .set('Idempotency-Key', 'idem-replay-key-1')
+            .set('X-Idempotency-Key', 'idem-replay-key-1')
             .send(body);
 
         assert.strictEqual(res2.statusCode, 201);
@@ -326,7 +350,7 @@ describe('Transfers API', () => {
         assert.strictEqual(checkBalance.body.balance, '900.00 USD');
     });
 
-    it('POST / - should return 422 if Idempotency-Key is reused with different request body', async () => {
+    it('POST / - should return 422 if X-Idempotency-Key is reused with different request body', async () => {
         const alice = await signupUser({
             name: 'Alice',
             email: 'alice@example.com',
@@ -341,7 +365,7 @@ describe('Transfers API', () => {
         await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
-            .set('Idempotency-Key', 'idem-mismatch-key-1')
+            .set('X-Idempotency-Key', 'idem-mismatch-key-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.id,
@@ -351,7 +375,7 @@ describe('Transfers API', () => {
         const res2 = await request(app)
             .post('/api/v1/transfers')
             .set('Authorization', `Bearer ${alice.token}`)
-            .set('Idempotency-Key', 'idem-mismatch-key-1')
+            .set('X-Idempotency-Key', 'idem-mismatch-key-1')
             .send({
                 fromAccountId: alice.account.id,
                 toAccountId: bob.id,
