@@ -193,7 +193,7 @@ export async function initiateExternalTransfer(
                     fromAccountId,
                     userId: actor.id,
                     amount: BigInt(amountMinor),
-                    currency: fromAccount.currency || 'NGN',
+                    currency: recipientData.currency || 'NGN',
                     reference,
                     recipient: {
                         accountNumber: recipientData.accountNumber,
@@ -209,6 +209,12 @@ export async function initiateExternalTransfer(
         } finally {
             await session.endSession();
         }
+
+        //send to worker for transfer
+        //send notification to user that transfer is being processed
+        //some other updates to the db
+
+        //return
 
         // ----------------------------------------------------
         // Phase 2: Dispatch to Paystack API

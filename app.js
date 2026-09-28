@@ -2,9 +2,11 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import mongoSanitize from 'express-mongo-sanitize';
+import { StatusCodes } from 'http-status-codes';
 import router from './routes/index.js';
 import logger from './config/logger.js';
 import { getRedisClient } from './util/idempotency.js';
+import { isTransientError } from './common/domain-exceptions/domain-exceptions.js';
 
 const app = express();
 
@@ -45,17 +47,55 @@ app.use(morgan(morganFormat, {
 // Routes
 app.use('/api/v1/', router);
 
+function sanitizeDetails(details) {
+    if (!details) return null;
+    if (Array.isArray(details)) return details;
+    if (typeof details !== 'object') return null;
+
+    if (details.meta || details.rawBody || details.code || details.type === 'api_error' || details.type === 'validation_error') {
+        return null;
+    }
+
+    const safeKeys = ['resource', 'id', 'field', 'reason', 'fromBalance', 'transferAmount', 'balance'];
+    const sanitized = {};
+    for (const key of Object.keys(details)) {
+        if (safeKeys.includes(key)) {
+            sanitized[key] = details[key];
+        }
+    }
+    return Object.keys(sanitized).length > 0 ? sanitized : null;
+}
+
 app.use((err, req, res, next) => {
-    const statusCode = err.statusCode || 500;
-    if (statusCode >= 500) {
+    let statusCode = err.statusCode || 500;
+    let message = err.message;
+
+    if (statusCode >= 500 || isTransientError(err)) {
         logger.error("EXPRESS ERROR HANDLER:", err);
     } else {
         logger.warn("DOMAIN EXCEPTION:", { message: err.message, statusCode, details: err.details });
     }
-   
-    res.status(statusCode).json({
-        error: err.message,
-        ...(err.details ? { details: err.details } : {})
+
+    // Format transient errors with a clean, friendly retry message
+    if (isTransientError(err)) {
+        statusCode = err.statusCode && [429, 502, 503, 504].includes(err.statusCode)
+            ? err.statusCode
+            : StatusCodes.SERVICE_UNAVAILABLE;
+        message = 'Server is currently busy. Please try again in a moment.';
+        return res.status(statusCode).json({ error: message });
+    }
+
+    // Sanitize non-operational 500 errors to prevent system internals from leaking
+    if (statusCode >= 500 && !err.isOperational) {
+        message = 'An unexpected error occurred. Please try again later.';
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: message });
+    }
+
+    const sanitizedDetails = sanitizeDetails(err.details);
+
+    return res.status(statusCode).json({
+        error: message,
+        ...(sanitizedDetails ? { details: sanitizedDetails } : {})
     });
 });
 

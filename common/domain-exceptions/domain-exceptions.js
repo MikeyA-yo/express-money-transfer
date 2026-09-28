@@ -130,3 +130,60 @@ export function InsufficientFundsError(message = 'Insufficient funds', details =
 }
 InsufficientFundsError.prototype = Object.create(BadRequestError.prototype);
 InsufficientFundsError.prototype.constructor = InsufficientFundsError;
+
+export const TooManyRequestsError = createErrorType(
+	'TooManyRequestsError',
+	StatusCodes.TOO_MANY_REQUESTS,
+	ReasonPhrases.TOO_MANY_REQUESTS
+);
+
+export const BadGatewayError = createErrorType(
+	'BadGatewayError',
+	StatusCodes.BAD_GATEWAY,
+	ReasonPhrases.BAD_GATEWAY
+);
+
+export function ServiceUnavailableError(message = 'Server is currently busy. Please try again shortly.', details = null) {
+	const error = ServiceLayerError(message, StatusCodes.SERVICE_UNAVAILABLE, details);
+	error.name = 'ServiceUnavailableError';
+	error.isTransient = true;
+	Object.setPrototypeOf(error, ServiceUnavailableError.prototype);
+	return error;
+}
+ServiceUnavailableError.prototype = Object.create(ServiceLayerError.prototype);
+ServiceUnavailableError.prototype.constructor = ServiceUnavailableError;
+
+export function GatewayTimeoutError(message = 'Upstream service timed out. Please try again shortly.', details = null) {
+	const error = ServiceLayerError(message, StatusCodes.GATEWAY_TIMEOUT, details);
+	error.name = 'GatewayTimeoutError';
+	error.isTransient = true;
+	Object.setPrototypeOf(error, GatewayTimeoutError.prototype);
+	return error;
+}
+GatewayTimeoutError.prototype = Object.create(ServiceLayerError.prototype);
+GatewayTimeoutError.prototype.constructor = GatewayTimeoutError;
+
+/**
+ * Checks if an error is a transient/temporary error (e.g. network timeout, server busy, 502/503/504)
+ * that should yield a retry-friendly message rather than leaking internal details.
+ */
+export function isTransientError(err) {
+	if (!err) return false;
+	if (err.isTransient) return true;
+	const statusCode = err.statusCode || err.status;
+	if (statusCode === 502 || statusCode === 503 || statusCode === 504 || statusCode === 429) {
+		return true;
+	}
+	const networkCodes = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN', 'UND_ERR_CONNECT_TIMEOUT'];
+	if (networkCodes.includes(err.code)) {
+		return true;
+	}
+	const mongoTransientNames = ['MongoNetworkError', 'MongoServerSelectionError', 'MongoTimeoutError'];
+	if (mongoTransientNames.includes(err.name)) {
+		return true;
+	}
+	if (typeof err.message === 'string' && /timeout|socket hang up|connection refused/i.test(err.message)) {
+		return true;
+	}
+	return false;
+}

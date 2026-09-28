@@ -10,6 +10,8 @@ import {
 } from '../../gateways/paystack/transfer.js';
 import {
     BadRequestError,
+    NotFoundError,
+    ServiceUnavailableError,
     ServiceLayerError
 } from '../../common/domain-exceptions/domain-exceptions.js';
 
@@ -142,4 +144,85 @@ describe('Paystack Transfer Gateway', () => {
             assert.strictEqual(verifyWebhookSignature(rawBody, '', secret), false);
         });
     });
+
+    describe('Gateway Error Formatting & Sanitization', () => {
+        it('should sanitize resolveAccount error and not leak raw Paystack body', async () => {
+            const mockClient = {
+                verification: {
+                    resolveAccount: mock.fn(async () => {
+                        const err = new Error('Cannot resolve account');
+                        err.status = 400;
+                        err.body = {
+                            status: false,
+                            message: 'Cannot resolve account',
+                            meta: { nextStep: 'Check bank code' },
+                            code: 'invalid_bank_code'
+                        };
+                        throw err;
+                    })
+                }
+            };
+
+            await assert.rejects(
+                resolveAccount('0123456789', '058', { client: mockClient }),
+                (err) => {
+                    assert.strictEqual(err.statusCode, 400);
+                    assert.strictEqual(err.message, 'Unable to resolve recipient bank account. Please verify the account number and bank code.');
+                    assert.strictEqual(err.details, null);
+                    return true;
+                }
+            );
+        });
+
+        it('should map network timeout or 503 to ServiceUnavailableError', async () => {
+            const mockClient = {
+                transfer: {
+                    initiate: mock.fn(async () => {
+                        const err = new Error('connect ETIMEDOUT 102.130.118.2:443');
+                        err.code = 'ETIMEDOUT';
+                        throw err;
+                    })
+                }
+            };
+
+            await assert.rejects(
+                initiateTransfer(5000, 'RCP_123', 'ref-timeout', '', { client: mockClient }),
+                (err) => {
+                    assert.strictEqual(err.statusCode, 503);
+                    assert.match(err.message, /temporarily busy/i);
+                    return true;
+                }
+            );
+        });
+
+        it('should sanitize starter business and third-party rejection to friendly payout error', async () => {
+            const mockClient = {
+                transfer: {
+                    initiate: mock.fn(async () => {
+                        const err = new Error('You cannot initiate third party payouts as a starter business');
+                        err.status = 400;
+                        err.body = {
+                            status: false,
+                            message: 'You cannot initiate third party payouts as a starter business',
+                            meta: { nextStep: "You'll need to upgrade your business" },
+                            type: 'api_error',
+                            code: 'transfer_unavailable'
+                        };
+                        throw err;
+                    })
+                }
+            };
+
+            await assert.rejects(
+                initiateTransfer(5000, 'RCP_123', 'ref-starter', '', { client: mockClient }),
+                (err) => {
+                    assert.strictEqual(err.statusCode, 400);
+                    assert.strictEqual(err.message, 'Unable to process payout at this time. Please try again later or contact support.');
+                    assert.strictEqual(err.details, null);
+                    return true;
+                }
+            );
+        });
+    });
 });
+

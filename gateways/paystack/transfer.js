@@ -1,10 +1,9 @@
 import crypto from 'crypto';
 import { paystack } from '../../config/paystack.js';
 import {
-    BadRequestError,
-    ServiceLayerError,
-    UnauthorizedError
+    BadRequestError
 } from '../../common/domain-exceptions/domain-exceptions.js';
+import { handleGatewayError } from './paystack.error.js';
 
 /**
  * Resolves a commercial bank account name via Paystack / NIBSS.
@@ -27,12 +26,9 @@ export async function resolveAccount(accountNumber, bankCode, { client = paystac
         if (response?.status && response?.data) {
             return response.data;
         }
-        throw BadRequestError(response?.message || 'Could not resolve account details', response);
+        throw new Error(response?.message || 'Could not resolve account details');
     } catch (err) {
-        if (err.statusCode || err.isOperational) throw err;
-        const statusCode = err?.status || 400;
-        const message = err?.body?.message || err?.message || 'Error resolving bank account';
-        throw ServiceLayerError(message, statusCode, err?.body || err);
+        throw handleGatewayError(err, 'resolveAccount');
     }
 }
 
@@ -64,12 +60,9 @@ export async function createTransferRecipient(name, accountNumber, bankCode, cur
         if (response?.status && response?.data) {
             return response.data;
         }
-        throw BadRequestError(response?.message || 'Failed to create transfer recipient', response);
+        throw new Error(response?.message || 'Failed to create transfer recipient');
     } catch (err) {
-        if (err.statusCode || err.isOperational) throw err;
-        const statusCode = err?.status || 400;
-        const message = err?.body?.message || err?.message || 'Paystack recipient creation failed';
-        throw ServiceLayerError(message, statusCode, err?.body || err);
+        throw handleGatewayError(err, 'createTransferRecipient');
     }
 }
 
@@ -101,12 +94,9 @@ export async function initiateTransfer(amountMinor, recipientCode, reference, re
         if (response?.status && response?.data) {
             return response.data;
         }
-        throw BadRequestError(response?.message || 'Failed to initiate transfer', response);
+        throw new Error(response?.message || 'Failed to initiate transfer');
     } catch (err) {
-        if (err.statusCode || err.isOperational) throw err;
-        const statusCode = err?.status || 500;
-        const message = err?.body?.message || err?.message || 'Paystack transfer initiation failed';
-        throw ServiceLayerError(message, statusCode, err?.body || err);
+        throw handleGatewayError(err, 'initiateTransfer');
     }
 }
 
@@ -125,12 +115,9 @@ export async function verifyTransfer(reference, { client = paystack } = {}) {
         if (response?.status && response?.data) {
             return response.data;
         }
-        throw BadRequestError(response?.message || 'Failed to verify transfer', response);
+        throw new Error(response?.message || 'Failed to verify transfer');
     } catch (err) {
-        if (err.statusCode || err.isOperational) throw err;
-        const statusCode = err?.status || 500;
-        const message = err?.body?.message || err?.message || 'Paystack transfer verification failed';
-        throw ServiceLayerError(message, statusCode, err?.body || err);
+        throw handleGatewayError(err, 'verifyTransfer');
     }
 }
 
