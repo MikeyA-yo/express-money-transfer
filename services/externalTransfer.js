@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import AccountModel from '../models/accounts.js';
 import UserModel from '../models/user.js';
+import OutboxModel from '../models/outbox.js';
 import ExternalTransferModel from '../models/externalTransfer.js';
 import * as paystackGateway from '../gateways/paystack/transfer.js';
 import {
@@ -27,11 +28,17 @@ import {
     set,
     del
 } from '../util/idempotency.js';
+import {
+    publishTransferCompleted,
+    publishTransferFailed
+} from '../events/pub/redis.pub.js';
+
 
 const models = {
     Account: AccountModel,
     User: UserModel,
-    ExternalTransfer: ExternalTransferModel
+    ExternalTransfer: ExternalTransferModel,
+    Outbox: OutboxModel,
 };
 
 async function resolveRedis(injectedRedis) {
@@ -95,6 +102,7 @@ export async function initiateExternalTransfer(
         Account = models.Account,
         User = models.User,
         ExternalTransfer = models.ExternalTransfer,
+        Outbox = models.Outbox,
         gateway = paystackGateway,
         redis,
         settlementDelayMs = 2000
@@ -148,7 +156,37 @@ export async function initiateExternalTransfer(
         throw ConflictError('A request with this Idempotency-Key is currently being processed. Please retry shortly.');
     }
 
-    // 3. Mark PENDING state in Redis
+    // 3. Record PENDING entry in Outbox with unique idempotencyKey
+    let outboxEntry = new Outbox({
+        userId: actor.id,
+        type: 'external-transfer',
+        payload: {
+            fromAccountId,
+            amountMinor: amountMinor.toString(),
+            recipientData
+        },
+        idempotencyKey,
+        status: 'PENDING'
+    });
+
+    try {
+        await outboxEntry.save();
+    } catch (error) {
+        const duplicateIdempotencyKey = error?.code === 11000 && (
+            error?.keyPattern?.idempotencyKey ||
+            error?.keyValue?.idempotencyKey ||
+            /idempotencyKey/i.test(error?.message || '')
+        );
+
+        if (duplicateIdempotencyKey) {
+            await releaseLock(client, lockKey);
+            throw ConflictError('A request with this Idempotency-Key already exists');
+        }
+        await releaseLock(client, lockKey);
+        throw error;
+    }
+
+    // 4. Mark PENDING state in Redis
     await set(
         client,
         redisKey,
@@ -165,7 +203,7 @@ export async function initiateExternalTransfer(
 
     try {
         // ----------------------------------------------------
-        // Phase 1: Atomic Ledger Reservation
+        // Phase 1: Atomic Ledger Reservation (Held before external payout)
         // ----------------------------------------------------
         const session = await mongoose.startSession();
         try {
@@ -209,12 +247,6 @@ export async function initiateExternalTransfer(
         } finally {
             await session.endSession();
         }
-
-        //send to worker for transfer
-        //send notification to user that transfer is being processed
-        //some other updates to the db
-
-        //return
 
         // ----------------------------------------------------
         // Phase 2: Dispatch to Paystack API
@@ -272,6 +304,26 @@ export async function initiateExternalTransfer(
                     });
                 }
             }
+
+            // Remove outbox entry upon successful completion
+            if (outboxEntry?._id || outboxEntry?.id) {
+                await Outbox.deleteOne({ _id: outboxEntry._id || outboxEntry.id });
+                outboxEntry = null;
+            }
+
+            // Redis Pub/Sub: publish transfer.completed event
+            await publishTransferCompleted(client, {
+                transferId: externalTransfer.id,
+                reference: externalTransfer.reference,
+                fromAccountId: externalTransfer.fromAccountId,
+                userId: actor.id,
+                amount: Number(externalTransfer.amount),
+                currency: externalTransfer.currency,
+                status: externalTransfer.status,
+                recipient: externalTransfer.recipient,
+                timestamp: new Date().toISOString()
+            });
+
         } catch (dispatchErr) {
             // Synchronous Paystack rejection: immediately issue atomic refund to ledger
             await Account.updateOne(
@@ -284,6 +336,23 @@ export async function initiateExternalTransfer(
                 externalTransfer.failureReason = dispatchErr.message;
                 await externalTransfer.save();
             }
+
+            // Clean up outbox entry on dispatch rejection so user can retry safely
+            if (outboxEntry?._id || outboxEntry?.id) {
+                await Outbox.deleteOne({ _id: outboxEntry._id || outboxEntry.id });
+                outboxEntry = null;
+            }
+
+            // Redis Pub/Sub: publish transfer.failed event
+            await publishTransferFailed(client, {
+                transferId: externalTransfer?.id,
+                reference,
+                fromAccountId,
+                userId: actor.id,
+                amount: Number(amountMinor),
+                reason: dispatchErr.message,
+                timestamp: new Date().toISOString()
+            });
 
             await del(client, redisKey);
             throw dispatchErr;
@@ -306,6 +375,12 @@ export async function initiateExternalTransfer(
 
         return formatOutput;
     } catch (err) {
+        // Clean up outbox entry on any other failure
+        if (outboxEntry?._id || outboxEntry?.id) {
+            try {
+                await Outbox.deleteOne({ _id: outboxEntry._id || outboxEntry.id });
+            } catch {}
+        }
         await del(client, redisKey);
         throw err;
     } finally {

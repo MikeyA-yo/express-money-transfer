@@ -120,3 +120,5 @@ export async function del(client, redisKey) {
     if (!client) return 0;
     return await client.del(redisKey);
 }
+
+export { publishEvent } from '../events/pub/redis.pub.js';

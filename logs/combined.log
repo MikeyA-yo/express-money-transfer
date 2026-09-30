@@ -5837,3 +5837,222 @@
 {"amount":"5000","fromAccountId":"acc-1","initiatedBy":"usr-1","level":"info","message":"Transfer completed","timestamp":"2026-09-28T11:59:26.739Z","toAccountId":"acc-2","transferId":"tr-1"}
 {"level":"info","message":"Connected to Redis","timestamp":"2026-09-28T11:59:27.797Z"}
 {"level":"info","message":"Connected to Redis","timestamp":"2026-09-28T11:59:28.305Z"}
+{"code":"invalid_bank_code","details":{"code":"invalid_bank_code","message":"Cannot resolve account","meta":{"nextStep":"Check bank code"},"status":false},"level":"error","message":"Paystack resolveAccount failure: Cannot resolve account","operation":"resolveAccount","status":400,"timestamp":"2026-09-29T20:30:19.830Z"}
+{"code":"ETIMEDOUT","details":{"code":"ETIMEDOUT"},"level":"error","message":"Paystack initiateTransfer failure: connect ETIMEDOUT 102.130.118.2:443","operation":"initiateTransfer","status":500,"timestamp":"2026-09-29T20:30:19.836Z"}
+{"code":"transfer_unavailable","details":{"code":"transfer_unavailable","message":"You cannot initiate third party payouts as a starter business","meta":{"nextStep":"You'll need to upgrade your business"},"status":false,"type":"api_error"},"level":"error","message":"Paystack initiateTransfer failure: You cannot initiate third party payouts as a starter business","operation":"initiateTransfer","status":400,"timestamp":"2026-09-29T20:30:19.838Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:33:01.921Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:33:36.144Z"}
+{"error":"Connection lost","key":"lock:key","level":"warn","message":"Failed to release lock","timestamp":"2026-09-29T20:33:54.769Z"}
+{"code":"invalid_bank_code","details":{"code":"invalid_bank_code","message":"Cannot resolve account","meta":{"nextStep":"Check bank code"},"status":false},"level":"error","message":"Paystack resolveAccount failure: Cannot resolve account","operation":"resolveAccount","status":400,"timestamp":"2026-09-29T20:33:55.321Z"}
+{"code":"ETIMEDOUT","details":{"code":"ETIMEDOUT"},"level":"error","message":"Paystack initiateTransfer failure: connect ETIMEDOUT 102.130.118.2:443","operation":"initiateTransfer","status":500,"timestamp":"2026-09-29T20:33:55.332Z"}
+{"code":"transfer_unavailable","details":{"code":"transfer_unavailable","message":"You cannot initiate third party payouts as a starter business","meta":{"nextStep":"You'll need to upgrade your business"},"status":false,"type":"api_error"},"level":"error","message":"Paystack initiateTransfer failure: You cannot initiate third party payouts as a starter business","operation":"initiateTransfer","status":400,"timestamp":"2026-09-29T20:33:55.335Z"}
+{"amount":500000,"fromAccountId":"64b1f2e3d4c5b6a789012345","initiatedBy":"usr-456","level":"info","message":"External transfer initiated","reference":"ext_ref_123","status":"PROCESSING","timestamp":"2026-09-29T20:33:55.751Z","transferId":"ext-999"}
+{"event":"transfer.success","level":"info","message":"Paystack webhook processed","received":true,"reference":"ref-001","timestamp":"2026-09-29T20:33:55.783Z"}
+{"accountId":"acc-bob","level":"info","message":"Account created","timestamp":"2026-09-29T20:33:55.812Z"}
+{"amount":"5000","fromAccountId":"acc-1","initiatedBy":"usr-1","level":"info","message":"Transfer completed","timestamp":"2026-09-29T20:33:55.838Z","toAccountId":"acc-2","transferId":"tr-1"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:33:56.979Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:33:58.165Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:35:52.236Z"}
+{"channel":"test.channel","error":"Redis connection lost","level":"warn","message":"Failed to publish event to Redis Pub/Sub","timestamp":"2026-09-29T20:36:13.808Z"}
+{"level":"info","message":"Subscribed to Redis channel: orders","timestamp":"2026-09-29T20:36:13.818Z"}
+{"level":"info","message":"Unsubscribed from Redis channel: orders","timestamp":"2026-09-29T20:36:13.820Z"}
+{"level":"info","message":"Subscribed to Redis channel: ch-1","timestamp":"2026-09-29T20:36:13.821Z"}
+{"level":"info","message":"Subscribed to Redis channel: ch-2","timestamp":"2026-09-29T20:36:13.822Z"}
+{"level":"info","message":"Unsubscribed from Redis channel: ch-1","timestamp":"2026-09-29T20:36:13.822Z"}
+{"level":"info","message":"Unsubscribed from Redis channel: ch-2","timestamp":"2026-09-29T20:36:13.823Z"}
+{"level":"info","message":"Subscribed to Redis channel: raw.channel","timestamp":"2026-09-29T20:36:13.824Z"}
+{"level":"info","message":"Subscribed to Redis channel: err.channel","timestamp":"2026-09-29T20:36:13.825Z"}
+{"channel":"err.channel","error":"Handler unexpected failure","level":"error","message":"Error in Redis Pub/Sub message handler","timestamp":"2026-09-29T20:36:13.826Z"}
+{"error":"Connection lost","key":"lock:key","level":"warn","message":"Failed to release lock","timestamp":"2026-09-29T20:36:24.473Z"}
+{"channel":"test.channel","error":"Redis connection lost","level":"warn","message":"Failed to publish event to Redis Pub/Sub","timestamp":"2026-09-29T20:36:24.991Z"}
+{"level":"info","message":"Subscribed to Redis channel: orders","timestamp":"2026-09-29T20:36:25.026Z"}
+{"level":"info","message":"Unsubscribed from Redis channel: orders","timestamp":"2026-09-29T20:36:25.033Z"}
+{"level":"info","message":"Subscribed to Redis channel: ch-1","timestamp":"2026-09-29T20:36:25.035Z"}
+{"level":"info","message":"Subscribed to Redis channel: ch-2","timestamp":"2026-09-29T20:36:25.036Z"}
+{"level":"info","message":"Unsubscribed from Redis channel: ch-1","timestamp":"2026-09-29T20:36:25.036Z"}
+{"level":"info","message":"Unsubscribed from Redis channel: ch-2","timestamp":"2026-09-29T20:36:25.037Z"}
+{"level":"info","message":"Subscribed to Redis channel: raw.channel","timestamp":"2026-09-29T20:36:25.038Z"}
+{"level":"info","message":"Subscribed to Redis channel: err.channel","timestamp":"2026-09-29T20:36:25.041Z"}
+{"channel":"err.channel","error":"Handler unexpected failure","level":"error","message":"Error in Redis Pub/Sub message handler","timestamp":"2026-09-29T20:36:25.042Z"}
+{"code":"invalid_bank_code","details":{"code":"invalid_bank_code","message":"Cannot resolve account","meta":{"nextStep":"Check bank code"},"status":false},"level":"error","message":"Paystack resolveAccount failure: Cannot resolve account","operation":"resolveAccount","status":400,"timestamp":"2026-09-29T20:36:25.070Z"}
+{"code":"ETIMEDOUT","details":{"code":"ETIMEDOUT"},"level":"error","message":"Paystack initiateTransfer failure: connect ETIMEDOUT 102.130.118.2:443","operation":"initiateTransfer","status":500,"timestamp":"2026-09-29T20:36:25.081Z"}
+{"code":"transfer_unavailable","details":{"code":"transfer_unavailable","message":"You cannot initiate third party payouts as a starter business","meta":{"nextStep":"You'll need to upgrade your business"},"status":false,"type":"api_error"},"level":"error","message":"Paystack initiateTransfer failure: You cannot initiate third party payouts as a starter business","operation":"initiateTransfer","status":400,"timestamp":"2026-09-29T20:36:25.086Z"}
+{"amount":500000,"fromAccountId":"64b1f2e3d4c5b6a789012345","initiatedBy":"usr-456","level":"info","message":"External transfer initiated","reference":"ext_ref_123","status":"PROCESSING","timestamp":"2026-09-29T20:36:25.446Z","transferId":"ext-999"}
+{"event":"transfer.success","level":"info","message":"Paystack webhook processed","received":true,"reference":"ref-001","timestamp":"2026-09-29T20:36:25.486Z"}
+{"accountId":"acc-bob","level":"info","message":"Account created","timestamp":"2026-09-29T20:36:25.589Z"}
+{"amount":"5000","fromAccountId":"acc-1","initiatedBy":"usr-1","level":"info","message":"Transfer completed","timestamp":"2026-09-29T20:36:25.617Z","toAccountId":"acc-2","transferId":"tr-1"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:36:26.627Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:36:28.281Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:36:48.036Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:36:50.146Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/resolve-account?accountNumber=0123456789&bankCode=058 401 35 - 10.485 ms","timestamp":"2026-09-29T20:36:50.159Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 595 - 168.264 ms","timestamp":"2026-09-29T20:36:51.042Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"Required","path":["accountNumber"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:36:51.057Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/resolve-account?bankCode=058 400 124 - 5.363 ms","timestamp":"2026-09-29T20:36:51.059Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:36:51.092Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 401 35 - 1.349 ms","timestamp":"2026-09-29T20:36:51.093Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Admin or Superadmin cannot perform this action","statusCode":403,"timestamp":"2026-09-29T20:36:51.118Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 403 58 - 2.311 ms","timestamp":"2026-09-29T20:36:51.120Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 565 - 141.037 ms","timestamp":"2026-09-29T20:36:51.286Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"X-Idempotency-Key header is required","path":["x-idempotency-key"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:36:51.294Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 400 156 - 2.484 ms","timestamp":"2026-09-29T20:36:51.295Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 575 - 234.831 ms","timestamp":"2026-09-29T20:36:51.601Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"X-Idempotency-Key header is required","path":["x-idempotency-key"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:36:51.612Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 400 156 - 2.122 ms","timestamp":"2026-09-29T20:36:51.613Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 591 - 130.230 ms","timestamp":"2026-09-29T20:36:51.776Z"}
+{"code":"invalid_bank_code","details":{"code":"invalid_bank_code","message":"Bank is invalid","meta":{"nextStep":"Ensure that you're passing the correct bank code. Use the List Banks Endpoint to get the list of all available banks and their corresponding bank codes"},"status":false,"type":"validation_error"},"level":"error","message":"Paystack createTransferRecipient failure: Bank is invalid","operation":"createTransferRecipient","status":400,"timestamp":"2026-09-29T20:36:53.265Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Unable to set up transfer recipient with the provided bank details.","statusCode":400,"timestamp":"2026-09-29T20:36:54.203Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 400 79 - 2419.569 ms","timestamp":"2026-09-29T20:36:54.204Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 545 - 116.102 ms","timestamp":"2026-09-29T20:36:54.354Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 545 - 128.301 ms","timestamp":"2026-09-29T20:36:54.490Z"}
+{"details":{"id":"1790714214479eg8x9b","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Cannot initiate transfer from an account you do not own","statusCode":403,"timestamp":"2026-09-29T20:36:54.502Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 403 127 - 7.903 ms","timestamp":"2026-09-29T20:36:54.503Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 566 - 133.575 ms","timestamp":"2026-09-29T20:36:54.665Z"}
+{"details":{"fromBalance":"1000","transferAmount":"50000"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds for external transfer","statusCode":400,"timestamp":"2026-09-29T20:36:55.304Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 400 110 - 633.626 ms","timestamp":"2026-09-29T20:36:55.305Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:36:55.334Z"}
+{"level":"info","message":"GET /api/v1/transfers/external 401 35 - 1.428 ms","timestamp":"2026-09-29T20:36:55.336Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 558 - 129.142 ms","timestamp":"2026-09-29T20:36:55.487Z"}
+{"level":"info","message":"GET /api/v1/transfers/external 200 2 - 5.352 ms","timestamp":"2026-09-29T20:36:55.500Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 571 - 132.622 ms","timestamp":"2026-09-29T20:36:55.659Z"}
+{"details":{"id":"64b1f2e3d4c5b6a789012345","reason":"Not Found","resource":"ExternalTransfer"},"level":"warn","message":"DOMAIN EXCEPTION: External transfer not found","statusCode":404,"timestamp":"2026-09-29T20:36:55.671Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/64b1f2e3d4c5b6a789012345 404 134 - 5.846 ms","timestamp":"2026-09-29T20:36:55.672Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:36:55.709Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/64b1f2e3d4c5b6a789012345/status 401 35 - 1.368 ms","timestamp":"2026-09-29T20:36:55.710Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 565 - 121.815 ms","timestamp":"2026-09-29T20:36:55.854Z"}
+{"details":{"id":"64b1f2e3d4c5b6a789012345","reason":"Not Found","resource":"ExternalTransfer"},"level":"warn","message":"DOMAIN EXCEPTION: External transfer not found","statusCode":404,"timestamp":"2026-09-29T20:36:55.864Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/64b1f2e3d4c5b6a789012345/status 404 134 - 4.153 ms","timestamp":"2026-09-29T20:36:55.865Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Invalid webhook signature","statusCode":401,"timestamp":"2026-09-29T20:36:55.892Z"}
+{"level":"info","message":"POST /api/v1/webhooks/paystack 401 37 - 2.233 ms","timestamp":"2026-09-29T20:36:55.893Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Invalid webhook signature","statusCode":401,"timestamp":"2026-09-29T20:36:55.911Z"}
+{"level":"info","message":"POST /api/v1/webhooks/paystack 401 37 - 1.694 ms","timestamp":"2026-09-29T20:36:55.912Z"}
+{"event":"transfer.success","level":"info","message":"Paystack webhook processed","reference":"ext_wh_test_ref_1790714215926_hr8s3viuay8","status":"success","timestamp":"2026-09-29T20:36:56.530Z"}
+{"level":"info","message":"POST /api/v1/webhooks/paystack 200 103 - 601.466 ms","timestamp":"2026-09-29T20:36:56.533Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:37:14.536Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:37:14.535Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-09-29T20:37:14.608Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:37:16.547Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/resolve-account?accountNumber=0123456789&bankCode=058 401 35 - 27.348 ms","timestamp":"2026-09-29T20:37:16.561Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:37:16.743Z"}
+{"level":"info","message":"POST /api/v1/transfers 401 35 - 30.575 ms","timestamp":"2026-09-29T20:37:16.757Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Admin or Superadmin cannot perform this action","statusCode":403,"timestamp":"2026-09-29T20:37:17.019Z"}
+{"level":"info","message":"POST /api/v1/transfers 403 58 - 6.926 ms","timestamp":"2026-09-29T20:37:17.021Z"}
+{"accountId":"179071423678496jpf3","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:17.054Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 129 - 281.040 ms","timestamp":"2026-09-29T20:37:17.069Z"}
+{"accountId":"1790714237136v9uar0","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:17.148Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 134 - 13.775 ms","timestamp":"2026-09-29T20:37:17.150Z"}
+{"details":{"email":"duplicate@example.com","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account already exists for this email","statusCode":409,"timestamp":"2026-09-29T20:37:17.168Z"}
+{"level":"info","message":"POST /api/v1/accounts 409 82 - 10.212 ms","timestamp":"2026-09-29T20:37:17.170Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"Required","path":["userId"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:37:17.212Z"}
+{"level":"info","message":"POST /api/v1/accounts 400 117 - 3.224 ms","timestamp":"2026-09-29T20:37:17.214Z"}
+{"accountId":"1790714237238688zys","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:17.248Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 140 - 11.033 ms","timestamp":"2026-09-29T20:37:17.250Z"}
+{"errors":[{"code":"too_small","exact":false,"inclusive":true,"message":"User ID is required","minimum":1,"path":["userId"],"type":"string"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:37:17.281Z"}
+{"level":"info","message":"POST /api/v1/accounts 400 141 - 1.719 ms","timestamp":"2026-09-29T20:37:17.283Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 2 - 9.396 ms","timestamp":"2026-09-29T20:37:17.323Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:37:17.346Z"}
+{"level":"info","message":"GET /api/v1/accounts 401 35 - 1.382 ms","timestamp":"2026-09-29T20:37:17.347Z"}
+{"accountId":"1790714237401w6z1hd","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:17.411Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 142 - 10.919 ms","timestamp":"2026-09-29T20:37:17.412Z"}
+{"level":"info","message":"DELETE /api/v1/accounts/1790714237401w6z1hd 200 42 - 17.379 ms","timestamp":"2026-09-29T20:37:17.440Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 563 - 394.626 ms","timestamp":"2026-09-29T20:37:17.455Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"X-Idempotency-Key header is required","path":["x-idempotency-key"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:37:17.468Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 156 - 4.176 ms","timestamp":"2026-09-29T20:37:17.470Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 595 - 393.077 ms","timestamp":"2026-09-29T20:37:17.482Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"Required","path":["accountNumber"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:37:17.497Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/resolve-account?bankCode=058 400 124 - 8.034 ms","timestamp":"2026-09-29T20:37:17.499Z"}
+{"accountId":"1790714237494j3tdnu","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:17.504Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 133 - 11.245 ms","timestamp":"2026-09-29T20:37:17.505Z"}
+{"accountId":"1790714237513klhjn3","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:17.524Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 138 - 11.475 ms","timestamp":"2026-09-29T20:37:17.525Z"}
+{"level":"info","message":"DELETE /api/v1/accounts/1790714237513klhjn3 200 42 - 9.311 ms","timestamp":"2026-09-29T20:37:17.541Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:37:17.550Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 401 35 - 1.754 ms","timestamp":"2026-09-29T20:37:17.552Z"}
+{"level":"info","message":"GET /api/v1/accounts 200 135 - 5.139 ms","timestamp":"2026-09-29T20:37:17.557Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Admin or Superadmin cannot perform this action","statusCode":403,"timestamp":"2026-09-29T20:37:17.582Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 403 58 - 2.047 ms","timestamp":"2026-09-29T20:37:17.583Z"}
+{"details":{"id":"non-existent-account-id","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-29T20:37:17.587Z"}
+{"level":"info","message":"DELETE /api/v1/accounts/non-existent-account-id 404 114 - 5.619 ms","timestamp":"2026-09-29T20:37:17.588Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 610 - 173.606 ms","timestamp":"2026-09-29T20:37:17.694Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"X-Idempotency-Key header is required","path":["x-idempotency-key"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:37:17.704Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 156 - 2.446 ms","timestamp":"2026-09-29T20:37:17.706Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authenticated user not found","statusCode":401,"timestamp":"2026-09-29T20:37:17.743Z"}
+{"level":"info","message":"POST /api/v1/transfers 401 40 - 6.982 ms","timestamp":"2026-09-29T20:37:17.744Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 565 - 171.952 ms","timestamp":"2026-09-29T20:37:17.810Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"X-Idempotency-Key header is required","path":["x-idempotency-key"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:37:17.820Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 400 156 - 2.872 ms","timestamp":"2026-09-29T20:37:17.822Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 563 - 237.793 ms","timestamp":"2026-09-29T20:37:18.008Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 575 - 209.459 ms","timestamp":"2026-09-29T20:37:18.062Z"}
+{"errors":[{"code":"invalid_type","expected":"string","message":"X-Idempotency-Key header is required","path":["x-idempotency-key"],"received":"undefined"}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:37:18.071Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 400 156 - 1.999 ms","timestamp":"2026-09-29T20:37:18.073Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 548 - 146.320 ms","timestamp":"2026-09-29T20:37:18.162Z"}
+{"details":{"id":"179071423799876rk24","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Cannot initiate transfer from an account you do not own","statusCode":403,"timestamp":"2026-09-29T20:37:18.181Z"}
+{"level":"info","message":"POST /api/v1/transfers 403 127 - 11.383 ms","timestamp":"2026-09-29T20:37:18.182Z"}
+{"level":"info","message":"GET /api/v1/accounts/179071423799876rk24 200 128 - 5.097 ms","timestamp":"2026-09-29T20:37:18.194Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 591 - 136.326 ms","timestamp":"2026-09-29T20:37:18.239Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 563 - 131.783 ms","timestamp":"2026-09-29T20:37:18.352Z"}
+{"accountId":"1790714238361o9urqk","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:18.371Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 122 - 11.697 ms","timestamp":"2026-09-29T20:37:18.372Z"}
+{"details":{"id":"not-alice-account","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Cannot initiate transfer from an account you do not own","statusCode":403,"timestamp":"2026-09-29T20:37:18.385Z"}
+{"level":"info","message":"POST /api/v1/transfers 403 125 - 7.006 ms","timestamp":"2026-09-29T20:37:18.386Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 563 - 138.884 ms","timestamp":"2026-09-29T20:37:18.551Z"}
+{"errors":[{"code":"custom","message":"Cannot transfer to the same account","path":["toAccountId"]}],"level":"error","message":"Validation error:","timestamp":"2026-09-29T20:37:18.558Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 100 - 1.392 ms","timestamp":"2026-09-29T20:37:18.559Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 563 - 145.389 ms","timestamp":"2026-09-29T20:37:18.733Z"}
+{"details":{"id":"nonexistent-destination","reason":"Not Found","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Account not found","statusCode":404,"timestamp":"2026-09-29T20:37:19.370Z"}
+{"level":"info","message":"POST /api/v1/transfers 404 114 - 632.549 ms","timestamp":"2026-09-29T20:37:19.372Z"}
+{"code":"invalid_bank_code","details":{"code":"invalid_bank_code","message":"Bank is invalid","meta":{"nextStep":"Ensure that you're passing the correct bank code. Use the List Banks Endpoint to get the list of all available banks and their corresponding bank codes"},"status":false,"type":"validation_error"},"level":"error","message":"Paystack createTransferRecipient failure: Bank is invalid","operation":"createTransferRecipient","status":400,"timestamp":"2026-09-29T20:37:19.517Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 563 - 135.626 ms","timestamp":"2026-09-29T20:37:19.555Z"}
+{"accountId":"1790714239562ekz3d7","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:19.570Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 122 - 9.128 ms","timestamp":"2026-09-29T20:37:19.571Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Unable to set up transfer recipient with the provided bank details.","statusCode":400,"timestamp":"2026-09-29T20:37:19.979Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 400 79 - 1735.063 ms","timestamp":"2026-09-29T20:37:19.980Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 545 - 121.185 ms","timestamp":"2026-09-29T20:37:20.126Z"}
+{"amount":"20000","fromAccountId":"1790714239547kra6hf","initiatedBy":"17907142395437ngsww","level":"info","message":"Transfer completed","timestamp":"2026-09-29T20:37:20.189Z","toAccountId":"1790714239562ekz3d7","transferId":"6abc217f1493de3315b08c02"}
+{"level":"info","message":"POST /api/v1/transfers 201 257 - 611.018 ms","timestamp":"2026-09-29T20:37:20.190Z"}
+{"level":"info","message":"GET /api/v1/accounts/1790714239547kra6hf 200 126 - 4.245 ms","timestamp":"2026-09-29T20:37:20.199Z"}
+{"level":"info","message":"GET /api/v1/accounts/1790714239562ekz3d7 200 122 - 3.695 ms","timestamp":"2026-09-29T20:37:20.209Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 545 - 120.561 ms","timestamp":"2026-09-29T20:37:20.251Z"}
+{"details":{"id":"1790714240243q9gezw","resource":"Account"},"level":"warn","message":"DOMAIN EXCEPTION: Cannot initiate transfer from an account you do not own","statusCode":403,"timestamp":"2026-09-29T20:37:20.265Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 403 127 - 7.808 ms","timestamp":"2026-09-29T20:37:20.266Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 561 - 132.686 ms","timestamp":"2026-09-29T20:37:20.368Z"}
+{"accountId":"17907142403737ilnu4","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:20.381Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 122 - 7.922 ms","timestamp":"2026-09-29T20:37:20.381Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 566 - 130.272 ms","timestamp":"2026-09-29T20:37:20.420Z"}
+{"details":{"fromBalance":"10000","transferAmount":"20000"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds","statusCode":400,"timestamp":"2026-09-29T20:37:20.966Z"}
+{"level":"info","message":"POST /api/v1/transfers 400 89 - 579.725 ms","timestamp":"2026-09-29T20:37:20.967Z"}
+{"details":{"fromBalance":"1000","transferAmount":"50000"},"level":"warn","message":"DOMAIN EXCEPTION: Insufficient funds for external transfer","statusCode":400,"timestamp":"2026-09-29T20:37:21.006Z"}
+{"level":"info","message":"POST /api/v1/transfers/external 400 110 - 581.981 ms","timestamp":"2026-09-29T20:37:21.008Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:37:21.044Z"}
+{"level":"info","message":"GET /api/v1/transfers/external 401 35 - 1.199 ms","timestamp":"2026-09-29T20:37:21.046Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 563 - 144.004 ms","timestamp":"2026-09-29T20:37:21.142Z"}
+{"accountId":"17907142411477bwd02","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:21.155Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 122 - 8.518 ms","timestamp":"2026-09-29T20:37:21.156Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 558 - 136.039 ms","timestamp":"2026-09-29T20:37:21.202Z"}
+{"level":"info","message":"GET /api/v1/transfers/external 200 2 - 4.635 ms","timestamp":"2026-09-29T20:37:21.215Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 571 - 137.448 ms","timestamp":"2026-09-29T20:37:21.377Z"}
+{"details":{"id":"64b1f2e3d4c5b6a789012345","reason":"Not Found","resource":"ExternalTransfer"},"level":"warn","message":"DOMAIN EXCEPTION: External transfer not found","statusCode":404,"timestamp":"2026-09-29T20:37:21.385Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/64b1f2e3d4c5b6a789012345 404 134 - 4.012 ms","timestamp":"2026-09-29T20:37:21.386Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Authentication required","statusCode":401,"timestamp":"2026-09-29T20:37:21.415Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/64b1f2e3d4c5b6a789012345/status 401 35 - 0.768 ms","timestamp":"2026-09-29T20:37:21.415Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 565 - 138.565 ms","timestamp":"2026-09-29T20:37:21.573Z"}
+{"details":{"id":"64b1f2e3d4c5b6a789012345","reason":"Not Found","resource":"ExternalTransfer"},"level":"warn","message":"DOMAIN EXCEPTION: External transfer not found","statusCode":404,"timestamp":"2026-09-29T20:37:21.581Z"}
+{"level":"info","message":"GET /api/v1/transfers/external/64b1f2e3d4c5b6a789012345/status 404 134 - 3.799 ms","timestamp":"2026-09-29T20:37:21.582Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Invalid webhook signature","statusCode":401,"timestamp":"2026-09-29T20:37:21.613Z"}
+{"level":"info","message":"POST /api/v1/webhooks/paystack 401 37 - 2.187 ms","timestamp":"2026-09-29T20:37:21.614Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Invalid webhook signature","statusCode":401,"timestamp":"2026-09-29T20:37:21.633Z"}
+{"level":"info","message":"POST /api/v1/webhooks/paystack 401 37 - 1.227 ms","timestamp":"2026-09-29T20:37:21.634Z"}
+{"amount":"10000","fromAccountId":"1790714241134slni77","initiatedBy":"1790714241129d1du39","level":"info","message":"Transfer completed","timestamp":"2026-09-29T20:37:21.898Z","toAccountId":"17907142411477bwd02","transferId":"6abc21811493de3315b08c0a"}
+{"level":"info","message":"POST /api/v1/transfers 201 257 - 737.026 ms","timestamp":"2026-09-29T20:37:21.899Z"}
+{"amount":"10000","fromAccountId":"1790714241134slni77","initiatedBy":"1790714241129d1du39","level":"info","message":"Transfer completed","timestamp":"2026-09-29T20:37:22.026Z","toAccountId":"17907142411477bwd02","transferId":"6abc21811493de3315b08c0a"}
+{"level":"info","message":"POST /api/v1/transfers 201 257 - 120.967 ms","timestamp":"2026-09-29T20:37:22.027Z"}
+{"level":"info","message":"GET /api/v1/accounts/1790714241134slni77 200 126 - 4.123 ms","timestamp":"2026-09-29T20:37:22.038Z"}
+{"event":"transfer.success","level":"info","message":"Paystack webhook processed","reference":"ext_wh_test_ref_1790714241648_rnd2q4ft2y","status":"success","timestamp":"2026-09-29T20:37:22.103Z"}
+{"level":"info","message":"POST /api/v1/webhooks/paystack 200 102 - 452.306 ms","timestamp":"2026-09-29T20:37:22.105Z"}
+{"level":"info","message":"POST /api/v1/auth/signup 201 563 - 150.174 ms","timestamp":"2026-09-29T20:37:22.260Z"}
+{"accountId":"17907142422674muz5t","level":"info","message":"Account created","timestamp":"2026-09-29T20:37:22.276Z"}
+{"level":"info","message":"POST /api/v1/accounts 201 122 - 10.325 ms","timestamp":"2026-09-29T20:37:22.278Z"}
+{"amount":"10000","fromAccountId":"1790714242249adee92","initiatedBy":"1790714242240po0b3e","level":"info","message":"Transfer completed","timestamp":"2026-09-29T20:37:23.007Z","toAccountId":"17907142422674muz5t","transferId":"6abc21821493de3315b08c0f"}
+{"level":"info","message":"POST /api/v1/transfers 201 257 - 723.198 ms","timestamp":"2026-09-29T20:37:23.008Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Idempotency key reused with different request body","statusCode":422,"timestamp":"2026-09-29T20:37:23.161Z"}
+{"level":"info","message":"POST /api/v1/transfers 422 62 - 147.046 ms","timestamp":"2026-09-29T20:37:23.162Z"}

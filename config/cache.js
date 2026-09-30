@@ -1,6 +1,6 @@
 import { createClient } from 'redis'; //redis.io
 
-async function createRedisClient(redis_url) {
+export default async function createRedisClient(redis_url) {
     const client = createClient({
         url: redis_url
     });
@@ -13,4 +13,12 @@ async function createRedisClient(redis_url) {
     return client;
 }
 
-export default createRedisClient;
+// Singleton Redis client instance
+let singletonRedisClient = null;
+
+export async function getRedisClient() {
+    if (!singletonRedisClient) {
+        singletonRedisClient = await createRedisClient(process.env.REDIS_URL || 'redis://localhost:6379');
+    }
+    return singletonRedisClient;
+}

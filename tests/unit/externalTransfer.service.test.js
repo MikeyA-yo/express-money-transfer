@@ -32,9 +32,11 @@ describe('ExternalTransfer Service', () => {
     let mockAccountModel;
     let mockUserModel;
     let mockExternalTransferModel;
+    let mockOutboxModel;
     let mockGateway;
     let mockSession;
     let mockRedis;
+    let defaultOptions;
     const actor = { id: 'usr-1', email: 'alice@test.com', role: 'user' };
 
     const validRecipient = {
@@ -109,6 +111,19 @@ describe('ExternalTransfer Service', () => {
         mockExternalTransferModel.findOne = mock.fn();
         mockExternalTransferModel.find = mock.fn();
 
+        mockOutboxModel = mock.fn(function (data) {
+            this._id = 'outbox-mock-1';
+            this.id = 'outbox-mock-1';
+            this.userId = data.userId;
+            this.type = data.type;
+            this.payload = data.payload;
+            this.idempotencyKey = data.idempotencyKey;
+            this.status = data.status || 'PENDING';
+            this.save = mock.fn(async () => this);
+        });
+        mockOutboxModel.deleteOne = mock.fn(async () => ({ deletedCount: 1 }));
+        mockOutboxModel.findOne = mock.fn(async () => null);
+
         mockGateway = {
             createTransferRecipient: mock.fn(async () => ({
                 recipient_code: 'RCP_test_123',
@@ -123,19 +138,21 @@ describe('ExternalTransfer Service', () => {
         mockRedis = {
             get: mock.fn(async () => null),
             set: mock.fn(async () => 'OK'),
-            del: mock.fn(async () => 1)
+            del: mock.fn(async () => 1),
+            publish: mock.fn(async () => 1)
+        };
+
+        defaultOptions = {
+            Account: mockAccountModel,
+            User: mockUserModel,
+            ExternalTransfer: mockExternalTransferModel,
+            Outbox: mockOutboxModel,
+            gateway: mockGateway,
+            redis: mockRedis
         };
     });
 
     it('should throw BadRequestError if compulsory parameters are missing', async () => {
-        const defaultOptions = {
-            Account: mockAccountModel,
-            User: mockUserModel,
-            ExternalTransfer: mockExternalTransferModel,
-            gateway: mockGateway,
-            redis: mockRedis
-        };
-
         await assert.rejects(
             initiateExternalTransfer('', 5000, validRecipient, actor, 'idem-1', defaultOptions),
             BadRequestError
@@ -160,13 +177,7 @@ describe('ExternalTransfer Service', () => {
 
     it('should throw ForbiddenError if user does not own source account', async () => {
         await assert.rejects(
-            initiateExternalTransfer('acc-someone-else', 5000, validRecipient, actor, 'idem-1', {
-                Account: mockAccountModel,
-                User: mockUserModel,
-                ExternalTransfer: mockExternalTransferModel,
-                gateway: mockGateway,
-                redis: mockRedis
-            }),
+            initiateExternalTransfer('acc-someone-else', 5000, validRecipient, actor, 'idem-1', defaultOptions),
             ForbiddenError
         );
     });
@@ -175,13 +186,7 @@ describe('ExternalTransfer Service', () => {
         mockAccountModel.updateOne = mock.fn(async () => ({ modifiedCount: 0 }));
 
         await assert.rejects(
-            initiateExternalTransfer('acc-1', 500000, validRecipient, actor, 'idem-1', {
-                Account: mockAccountModel,
-                User: mockUserModel,
-                ExternalTransfer: mockExternalTransferModel,
-                gateway: mockGateway,
-                redis: mockRedis
-            }),
+            initiateExternalTransfer('acc-1', 500000, validRecipient, actor, 'idem-1', defaultOptions),
             InsufficientFundsError
         );
 
@@ -189,14 +194,8 @@ describe('ExternalTransfer Service', () => {
         assert.ok(mockRedis.del.mock.callCount() >= 1);
     });
 
-    it('should reserve balance, call Paystack, and record successful transfer', async () => {
-        const result = await initiateExternalTransfer('acc-1', 20000, validRecipient, actor, 'idem-1', {
-            Account: mockAccountModel,
-            User: mockUserModel,
-            ExternalTransfer: mockExternalTransferModel,
-            gateway: mockGateway,
-            redis: mockRedis
-        });
+    it('should reserve balance, call Paystack, record successful transfer, clean outbox, and publish pub/sub event', async () => {
+        const result = await initiateExternalTransfer('acc-1', 20000, validRecipient, actor, 'idem-1', defaultOptions);
 
         // 1. Ledger reservation verified
         assert.strictEqual(mockAccountModel.updateOne.mock.callCount(), 1);
@@ -208,25 +207,59 @@ describe('ExternalTransfer Service', () => {
             $inc: { balance: -20000n }
         });
 
-        // 2. Paystack dispatch verified
+        // 2. Outbox creation and deletion verified
+        assert.strictEqual(mockOutboxModel.mock.callCount(), 1);
+        assert.strictEqual(mockOutboxModel.deleteOne.mock.callCount(), 1);
+
+        // 3. Paystack dispatch verified
         assert.strictEqual(mockGateway.createTransferRecipient.mock.callCount(), 1);
         assert.strictEqual(mockGateway.initiateTransfer.mock.callCount(), 1);
 
-        // 3. Response output verified
+        // 4. Redis Pub/Sub verified
+        assert.strictEqual(mockRedis.publish.mock.callCount(), 1);
+        assert.strictEqual(mockRedis.publish.mock.calls[0].arguments[0], 'transfers.external');
+        const pubPayload = JSON.parse(mockRedis.publish.mock.calls[0].arguments[1]);
+        assert.strictEqual(pubPayload.event, 'transfer.completed');
+        assert.strictEqual(pubPayload.status, 'COMPLETED');
+        assert.strictEqual(pubPayload.amount, 20000);
+
+        // 5. Response output verified
         assert.strictEqual(result.status, 'COMPLETED');
         assert.strictEqual(result.amount, 20000);
         assert.strictEqual(result.amountMajor, '200.00 USD');
         assert.strictEqual(result.amountMinor, '20000 USDMINOR');
         assert.strictEqual(result.transferCode, 'TRF_test_456');
 
-        // 4. Redis caching verified
+        // 6. Redis caching verified
         const setCalls = mockRedis.set.mock.calls;
         assert.ok(setCalls.some(c => c.arguments[0].startsWith('lock:')));
         assert.ok(setCalls.some(c => !c.arguments[0].startsWith('lock:') && JSON.parse(c.arguments[1]).status === 'COMPLETED'));
         assert.ok(mockRedis.del.mock.calls.some(c => c.arguments[0].startsWith('lock:')));
     });
 
-    it('should automatically refund reserved balance if Paystack rejects synchronously', async () => {
+    it('should throw ConflictError if duplicate idempotencyKey is used in Outbox', async () => {
+        mockOutboxModel = mock.fn(function () {
+            this.save = mock.fn(async () => {
+                const err = new Error('E11000 duplicate key error');
+                err.code = 11000;
+                err.keyPattern = { idempotencyKey: 1 };
+                throw err;
+            });
+        });
+
+        await assert.rejects(
+            initiateExternalTransfer('acc-1', 20000, validRecipient, actor, 'idem-duplicate', {
+                ...defaultOptions,
+                Outbox: mockOutboxModel
+            }),
+            ConflictError
+        );
+
+        // Mutex lock should be released
+        assert.ok(mockRedis.del.mock.calls.some(c => c.arguments[0].startsWith('lock:')));
+    });
+
+    it('should automatically refund reserved balance, clean outbox, and publish failure event if Paystack rejects', async () => {
         mockGateway.initiateTransfer = mock.fn(async () => {
             const err = new Error('Transfer declined by provider');
             err.statusCode = 400;
@@ -234,13 +267,7 @@ describe('ExternalTransfer Service', () => {
         });
 
         await assert.rejects(
-            initiateExternalTransfer('acc-1', 20000, validRecipient, actor, 'idem-1', {
-                Account: mockAccountModel,
-                User: mockUserModel,
-                ExternalTransfer: mockExternalTransferModel,
-                gateway: mockGateway,
-                redis: mockRedis
-            }),
+            initiateExternalTransfer('acc-1', 20000, validRecipient, actor, 'idem-1', defaultOptions),
             /Transfer declined/
         );
 
@@ -248,6 +275,16 @@ describe('ExternalTransfer Service', () => {
         assert.strictEqual(mockAccountModel.updateOne.mock.callCount(), 2);
         assert.deepStrictEqual(mockAccountModel.updateOne.mock.calls[1].arguments[0], { id: 'acc-1' });
         assert.deepStrictEqual(mockAccountModel.updateOne.mock.calls[1].arguments[1], { $inc: { balance: 20000n } });
+
+        // Outbox cleaned up on failure
+        assert.strictEqual(mockOutboxModel.deleteOne.mock.callCount(), 1);
+
+        // Redis Pub/Sub published failure event
+        assert.strictEqual(mockRedis.publish.mock.callCount(), 1);
+        assert.strictEqual(mockRedis.publish.mock.calls[0].arguments[0], 'transfers.external');
+        const pubPayload = JSON.parse(mockRedis.publish.mock.calls[0].arguments[1]);
+        assert.strictEqual(pubPayload.event, 'transfer.failed');
+        assert.strictEqual(pubPayload.reason, 'Transfer declined by provider');
 
         // Redis pending key deleted
         assert.ok(mockRedis.del.mock.callCount() >= 1);
@@ -275,17 +312,12 @@ describe('ExternalTransfer Service', () => {
             response: cachedResponse
         }));
 
-        const result = await initiateExternalTransfer('acc-1', 20000, validRecipient, actor, 'idem-1', {
-            Account: mockAccountModel,
-            User: mockUserModel,
-            ExternalTransfer: mockExternalTransferModel,
-            gateway: mockGateway,
-            redis: mockRedis
-        });
+        const result = await initiateExternalTransfer('acc-1', 20000, validRecipient, actor, 'idem-1', defaultOptions);
 
         assert.deepStrictEqual(result, cachedResponse);
-        // Database session should not be opened on cache hit
+        // Database session and Outbox should not be opened on cache hit
         assert.strictEqual(mongoose.startSession.mock.callCount(), 0);
+        assert.strictEqual(mockOutboxModel.mock.callCount(), 0);
     });
 
     it('should throw UnprocessableEntityError when idempotency key reused with different body', async () => {
@@ -296,13 +328,7 @@ describe('ExternalTransfer Service', () => {
         }));
 
         await assert.rejects(
-            initiateExternalTransfer('acc-1', 20000, validRecipient, actor, 'idem-1', {
-                Account: mockAccountModel,
-                User: mockUserModel,
-                ExternalTransfer: mockExternalTransferModel,
-                gateway: mockGateway,
-                redis: mockRedis
-            }),
+            initiateExternalTransfer('acc-1', 20000, validRecipient, actor, 'idem-1', defaultOptions),
             UnprocessableEntityError
         );
     });
