@@ -16,13 +16,6 @@ import {
   toTransfersResponse,
 } from "../response-schema/index.js";
 import {
-  createMoney,
-  sum,
-  subtractMoney,
-  toAmount,
-  Money,
-} from "../common/money-value-object/index.js";
-import {
   getRedisClient,
   fingerprint,
   createRedisKey,
@@ -33,6 +26,7 @@ import {
   get,
   del,
 } from "../util/idempotency.js";
+import { publishTransferJob } from '../events/bullmq/queue.js';
 
 const models = {
   Transfer,
@@ -89,6 +83,7 @@ export async function newTransfer(
     Account = models.Account,
     User = models.User,
     redis,
+    publishJob = publishTransferJob,
   } = {},
 ) {
   if (!idempotencyKey) {
@@ -256,7 +251,15 @@ export async function newTransfer(
         }),
         { EX: 86400 }
       );
-
+      await publishJob({
+        transferId: transfer.id,
+        reference: transfer.reference,
+        fromAccountId: transfer.fromAccountId,
+        toAccountId: transfer.toAccountId,
+        amount: transfer.amount.toString(),
+        completedAt: new Date().toISOString(),
+        email: actor?.email || null,
+      });
       return formatOutput;
     } finally {
       await session.endSession();

@@ -7,7 +7,6 @@ import * as authService from '../services/auth.js';
  */
 export const authenticate = ({ verifyToken = authService.verifyToken } = {}) => (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
-
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw UnauthorizedError('Authentication required');
   }

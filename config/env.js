@@ -9,5 +9,9 @@ export const globalConfig = (process) => {
         REDIS_URL: z.string().url(),
         PAYSTACK_TEST_PUBLIC_KEY: z.string(),
         PAYSTACK_TEST_SECRET_KEY: z.string(),
+        SMTP_HOST: z.string(),
+        SMTP_PORT: z.number(),
+        SMTP_USER: z.string(),
+        SMTP_PASS: z.string(),
     });
 }

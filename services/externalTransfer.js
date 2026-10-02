@@ -32,6 +32,7 @@ import {
     publishTransferCompleted,
     publishTransferFailed
 } from '../events/pub/redis.pub.js';
+import { publishTransferJob } from '../events/bullmq/queue.js';
 
 
 const models = {
@@ -105,7 +106,8 @@ export async function initiateExternalTransfer(
         Outbox = models.Outbox,
         gateway = paystackGateway,
         redis,
-        settlementDelayMs = 2000
+        settlementDelayMs = 2000,
+        publishJob = publishTransferJob
     } = {}
 ) {
     if (!fromAccountId) throw BadRequestError('Source account ID is required');
@@ -322,6 +324,20 @@ export async function initiateExternalTransfer(
                 status: externalTransfer.status,
                 recipient: externalTransfer.recipient,
                 timestamp: new Date().toISOString()
+            });
+
+            // BullMQ: enqueue transfer job for further processing (e.g., notifications, logging)
+            await publishJob({
+                transferId: externalTransfer.id,
+                reference: externalTransfer.reference,
+                fromAccountId: externalTransfer.fromAccountId,
+                userId: actor.id,
+                amount: Number(externalTransfer.amount),
+                currency: externalTransfer.currency,
+                status: externalTransfer.status,
+                recipient: externalTransfer.recipient,
+                timestamp: new Date().toISOString(),
+                idempotencyKey
             });
 
         } catch (dispatchErr) {
