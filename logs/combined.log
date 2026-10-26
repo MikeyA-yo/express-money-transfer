@@ -6099,3 +6099,64 @@
 {"level":"info","message":"POST /api/v1/transfers 201 257 - 405.154 ms","timestamp":"2026-10-02T12:58:41.120Z"}
 {"amount":"20000","fromAccountId":"1788278253338fm7cj0","initiatedBy":"1788278253338fm7cj0","level":"info","message":"Transfer completed","timestamp":"2026-10-02T12:58:59.664Z","toAccountId":"1788785048069fsp3hn","transferId":"6abfaa92280bf62de2586bc9"}
 {"level":"info","message":"POST /api/v1/transfers 201 257 - 2406.898 ms","timestamp":"2026-10-02T12:58:59.665Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:11:38.389Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:11:46.152Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-10-02T13:11:47.818Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-10-02T13:11:47.831Z"}
+{"amount":"20000","fromAccountId":"1788278253338fm7cj0","initiatedBy":"1788278253338fm7cj0","level":"info","message":"Transfer completed","timestamp":"2026-10-02T13:11:54.174Z","toAccountId":"1788785048069fsp3hn","transferId":"6abfaa92280bf62de2586bc9"}
+{"level":"info","message":"POST /api/v1/transfers 201 257 - 569.585 ms","timestamp":"2026-10-02T13:11:54.184Z"}
+{"amount":"20000","fromAccountId":"1788278253338fm7cj0","initiatedBy":"1788278253338fm7cj0","level":"info","message":"Transfer completed","timestamp":"2026-10-02T13:12:07.093Z","toAccountId":"1788785048069fsp3hn","transferId":"6abfada6bdec9cc3f6217072"}
+{"level":"info","message":"POST /api/v1/transfers 201 257 - 2522.734 ms","timestamp":"2026-10-02T13:12:07.096Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:15:25.891Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-10-02T13:15:30.402Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-10-02T13:15:30.415Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:20:58.269Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-10-02T13:21:03.124Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-10-02T13:21:03.163Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:21:35.589Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-10-02T13:21:41.303Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-10-02T13:21:41.324Z"}
+{"details":{"reason":"jwt expired"},"level":"warn","message":"DOMAIN EXCEPTION: Invalid or expired token","statusCode":401,"timestamp":"2026-10-02T13:22:06.110Z"}
+{"level":"info","message":"POST /api/v1/transfers 401 71 - 13.045 ms","timestamp":"2026-10-02T13:22:06.118Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:22:14.506Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-10-02T13:22:16.879Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-10-02T13:22:16.909Z"}
+{"level":"info","message":"POST /api/v1/auth/login 200 476 - 738.531 ms","timestamp":"2026-10-02T13:22:25.023Z"}
+{"amount":"20000","fromAccountId":"1788278253338fm7cj0","initiatedBy":"1788278253338fm7cj0","level":"info","message":"Transfer completed","timestamp":"2026-10-02T13:23:35.871Z","toAccountId":"1788785048069fsp3hn","transferId":"6abfb05624285f40a2ecb8ca"}
+{"level":"info","message":"POST /api/v1/transfers 201 257 - 3957.987 ms","timestamp":"2026-10-02T13:23:35.875Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:25:37.756Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-10-02T13:25:43.945Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-10-02T13:25:43.964Z"}
+{"amount":"20000","fromAccountId":"1788278253338fm7cj0","initiatedBy":"1788278253338fm7cj0","level":"info","message":"Transfer completed","timestamp":"2026-10-02T13:25:51.261Z","toAccountId":"1788785048069fsp3hn","transferId":"6abfb05624285f40a2ecb8ca"}
+{"level":"info","message":"POST /api/v1/transfers 201 257 - 570.708 ms","timestamp":"2026-10-02T13:25:51.277Z"}
+{"amount":"200","fromAccountId":"1788278253338fm7cj0","initiatedBy":"1788278253338fm7cj0","level":"info","message":"Transfer completed","timestamp":"2026-10-02T13:26:13.937Z","toAccountId":"1788785048069fsp3hn","transferId":"6abfb0f4daa9c42a8fb67d85"}
+{"level":"info","message":"POST /api/v1/transfers 201 251 - 2636.576 ms","timestamp":"2026-10-02T13:26:13.941Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:28:59.105Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-10-02T13:29:24.575Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-10-02T13:29:24.590Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:36:30.544Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-10-02T13:36:42.542Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-10-02T13:36:42.556Z"}
+{"amount":"200","fromAccountId":"1788278253338fm7cj0","initiatedBy":"1788278253338fm7cj0","level":"info","message":"Transfer completed","timestamp":"2026-10-02T13:37:38.777Z","toAccountId":"1788785048069fsp3hn","transferId":"6abfb3a11d183bc1cac4ffb3"}
+{"level":"info","message":"POST /api/v1/transfers 201 251 - 2385.344 ms","timestamp":"2026-10-02T13:37:38.784Z"}
+{"level":"error","message":"Error connecting to MongoDB: queryTxt ESERVFAIL cluster0.lun9qde.mongodb.net","timestamp":"2026-10-02T13:41:39.076Z"}
+{"level":"error","message":"Error connecting to MongoDB: queryTxt ESERVFAIL cluster0.lun9qde.mongodb.net","timestamp":"2026-10-02T13:41:55.335Z"}
+{"level":"info","message":"Connected to Redis","timestamp":"2026-10-02T13:42:10.656Z"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2026-10-02T13:42:11.869Z"}
+{"level":"info","message":"Server running on port 8000","timestamp":"2026-10-02T13:42:11.875Z"}
+{"channel":"test.channel","error":"Redis connection lost","level":"warn","message":"Failed to publish event to Redis Pub/Sub","timestamp":"2026-10-02T13:43:10.664Z"}
+{"level":"info","message":"Subscribed to Redis channel: orders","timestamp":"2026-10-02T13:43:10.671Z"}
+{"level":"info","message":"Unsubscribed from Redis channel: orders","timestamp":"2026-10-02T13:43:10.672Z"}
+{"level":"info","message":"Subscribed to Redis channel: ch-1","timestamp":"2026-10-02T13:43:10.673Z"}
+{"level":"info","message":"Subscribed to Redis channel: ch-2","timestamp":"2026-10-02T13:43:10.673Z"}
+{"level":"info","message":"Unsubscribed from Redis channel: ch-1","timestamp":"2026-10-02T13:43:10.674Z"}
+{"level":"info","message":"Unsubscribed from Redis channel: ch-2","timestamp":"2026-10-02T13:43:10.674Z"}
+{"level":"info","message":"Subscribed to Redis channel: raw.channel","timestamp":"2026-10-02T13:43:10.675Z"}
+{"level":"info","message":"Subscribed to Redis channel: err.channel","timestamp":"2026-10-02T13:43:10.676Z"}
+{"channel":"err.channel","error":"Handler unexpected failure","level":"error","message":"Error in Redis Pub/Sub message handler","timestamp":"2026-10-02T13:43:10.677Z"}
+{"amount":"12500","fromAccountId":"1788278253338fm7cj0","initiatedBy":"1788278253338fm7cj0","level":"info","message":"Transfer completed","timestamp":"2026-10-02T13:44:03.902Z","toAccountId":"1788785048069fsp3hn","transferId":"6abfb522c4145a5667edd309"}
+{"level":"info","message":"POST /api/v1/transfers 201 257 - 2706.834 ms","timestamp":"2026-10-02T13:44:03.910Z"}
+{"details":null,"level":"warn","message":"DOMAIN EXCEPTION: Idempotency key reused with different request body","statusCode":422,"timestamp":"2026-10-02T13:45:44.554Z"}
+{"level":"info","message":"POST /api/v1/transfers 422 62 - 461.559 ms","timestamp":"2026-10-02T13:45:44.557Z"}
+{"amount":"125000","fromAccountId":"1788278253338fm7cj0","initiatedBy":"1788278253338fm7cj0","level":"info","message":"Transfer completed","timestamp":"2026-10-02T13:46:08.916Z","toAccountId":"1788785048069fsp3hn","transferId":"6abfb5a0c4145a5667edd30b"}
+{"level":"info","message":"POST /api/v1/transfers 201 260 - 2096.277 ms","timestamp":"2026-10-02T13:46:08.918Z"}

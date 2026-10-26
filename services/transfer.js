@@ -253,7 +253,7 @@ export async function newTransfer(
       );
       await publishJob({
         transferId: transfer.id,
-        reference: transfer.reference,
+        reference: transfer.id,
         fromAccountId: transfer.fromAccountId,
         toAccountId: transfer.toAccountId,
         amount: transfer.amount.toString(),
