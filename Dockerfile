@@ -12,11 +12,11 @@ RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
 FROM ${NODE_IMAGE} AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+RUN  apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
 
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 COPY --chown=node:node . .
 RUN mkdir -p logs && chown node:node logs
-RUN  apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
 
 USER node
 EXPOSE 8000
